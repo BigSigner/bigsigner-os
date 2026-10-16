@@ -51,6 +51,6 @@ touch -d "${disk_timestamp}" `find boot overlays`
 mcopy -bpm -i "disk.img@@$OFFSET" boot/* ::
 # mcopy doesn't copy directories deterministically, so rely on sorted shell globbing instead.
 mcopy -bpm -i "disk.img@@$OFFSET" overlays/* ::overlays
-mv disk.img ${BASE_DIR}/images/seedsigner_os.img
+mv disk.img ${BASE_DIR}/images/bigsigner_os.img
 
 cd -

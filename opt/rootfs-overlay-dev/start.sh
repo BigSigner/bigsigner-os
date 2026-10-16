@@ -4,7 +4,7 @@
 #
 # Prefers a developer checkout on the persistent data partition over the code
 # baked into the image:
-#   git clone https://github.com/SeedSigner/seedsigner.git /mnt/data/seedsigner
+#   git clone https://github.com/BigSigner/bigsigner.git /mnt/data/seedsigner
 #
 # S02seedsigner launches this before S30devdata has mounted /mnt/data, so wait
 # briefly for the mount to show up (skipped instantly when the data partition

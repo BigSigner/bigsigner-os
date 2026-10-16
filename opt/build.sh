@@ -6,7 +6,7 @@ export FORCE_UNSAFE_CONFIGURE=1 # Allows buildroot/tar to run as root user in do
 # global variables
 cur_dir_name=${PWD##*/}
 cur_dir=$(pwd)
-seedsigner_app_repo="https://github.com/SeedSigner/seedsigner.git"
+bigsigner_app_repo="https://github.com/BigSigner/bigsigner.git"
 seedsigner_app_repo_branch="dev"
 
 help()
@@ -224,18 +224,18 @@ build_image() {
   cd "${build_dir}"
   PATH="/usr/lib/ccache:${PATH}" make
   
-  # if successful, mv seedsigner_os.img image to /images
+  # if successful, mv bigsigner_os.img image to /images
   # rename to image to include branch name and config name, then compress
   
-  seedsigner_os_image_output="${image_dir}/seedsigner_os.${seedsigner_app_repo_branch}.${config_name}.img"
+  bigsigner_os_image_output="${image_dir}/bigsigner_os.${seedsigner_app_repo_branch}.${config_name}.img"
   if ! [ -z ${seedsigner_app_repo_commit_id} ]; then
     # use commit id instead of branch name if it is set
-    seedsigner_os_image_output="${image_dir}/seedsigner_os.${seedsigner_app_repo_commit_id}.${config_name}.img"
+    bigsigner_os_image_output="${image_dir}/bigsigner_os.${seedsigner_app_repo_commit_id}.${config_name}.img"
   fi
   
-  if [ -f "${build_dir}/images/seedsigner_os.img" ] && [ -d "${image_dir}" ]; then
-    mv -f "${build_dir}/images/seedsigner_os.img" "${seedsigner_os_image_output}"
-    sha256sum "${seedsigner_os_image_output}"
+  if [ -f "${build_dir}/images/bigsigner_os.img" ] && [ -d "${image_dir}" ]; then
+    mv -f "${build_dir}/images/bigsigner_os.img" "${bigsigner_os_image_output}"
+    sha256sum "${bigsigner_os_image_output}"
   fi
   
   cd - > /dev/null # return to previous working directory quietly
