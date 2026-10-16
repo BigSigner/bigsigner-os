@@ -1,11 +1,13 @@
 # Developer workflow
 
-There are two overlapping kinds of "development" on SeedSigner OS, and this doc covers both:
+BigSigner OS is a fork of [SeedSigner OS](https://github.com/SeedSigner/seedsigner-os). There are two overlapping kinds of "development" on BigSigner OS, and this doc covers both:
 
 1. **Iterating on the OS build itself** (Buildroot, kernel, packages) — how to avoid a from-scratch rebuild every time. See [Iterating on the OS build](#iterating-on-the-os-build).
-2. **Developing the SeedSigner *application* on real hardware** using a `-dev` image — flash a networked, SSH-able image and edit / run / test the app right on the device. See [Developing the app on a `-dev` image](#developing-the-app-on-a--dev-image).
+2. **Developing the BigSigner *application* on real hardware** using a `-dev` image — flash a networked, SSH-able image and edit / run / test the app right on the device. See [Developing the app on a `-dev` image](#developing-the-app-on-a--dev-image).
 
 The *internals* of the developer images — what's added, how they're built, and the networking / pip / venv specifics — live in [dev_images.md](dev_images.md). This doc is the hands-on side: how you actually work.
+
+Commands, hostnames, paths, and script names below still use `seedsigner`. Those names come from the build configuration and the application, which have not been renamed yet. Built image files use the `bigsigner_os` prefix. The application repo cloned in this guide is [BigSigner](https://github.com/BigSigner/bigsigner).
 
 ---
 
@@ -37,14 +39,14 @@ docker exec -it seedsigner-os-build-images-1 bash
 
 From there you can run the build script directly out of `/opt`:
 ```bash
-./build.sh --pi0 --app-repo=https://github.com/seedsigner/seedsigner.git --app-branch=dev --no-clean
+./build.sh --pi0 --app-repo=https://github.com/BigSigner/bigsigner.git --app-branch=dev --no-clean
 ```
 or pin a specific commit:
 ```bash
-./build.sh --pi0 --app-repo=https://github.com/seedsigner/seedsigner.git --app-commit-id=9c36f5c --no-clean
+./build.sh --pi0 --app-repo=https://github.com/BigSigner/bigsigner.git --app-commit-id=9c36f5c --no-clean
 ```
 
-You can also use any of the Buildroot customization commands — `make menuconfig`, `make linux-menuconfig`, `make busybox-menuconfig` — from the `/output` directory (see [Customizing Buildroot](customize_buildroot.md)). Move an image you built manually with `make` into the shared volume with `mv images/seedsigner_os.img /images/`.
+You can also use any of the Buildroot customization commands — `make menuconfig`, `make linux-menuconfig`, `make busybox-menuconfig` — from the `/output` directory (see [Customizing Buildroot](customize_buildroot.md)). Move an image you built manually with `make` into the shared volume with `mv images/bigsigner_os.img /images/`.
 
 ### "Disk full" troubleshooting
 
@@ -69,9 +71,9 @@ Raise the `count` and re-run the build.
 
 The `docker-compose.yml` mounts the repo's `images` directory as a container volume, so finished images land there on the host. They're named:
 
-`seedsigner_os.<app_repo_branch>.<board_config>.img`
+`bigsigner_os.<app_repo_branch>.<board_config>.img`
 
-For example a `pi0` built off the `0.5.2` branch is `seedsigner_os.0.5.2.pi0.img`. Developer builds carry the board's `-dev` config in the name, e.g. `seedsigner_os.<branch>.pi0-dev.img`.
+For example a `pi0` built off the `0.5.2` branch is `bigsigner_os.0.5.2.pi0.img`. Developer builds carry the board's `-dev` config in the name, e.g. `bigsigner_os.<branch>.pi0-dev.img`.
 
 ---
 
@@ -95,7 +97,7 @@ From a freshly built image, this takes you to running the test suite and your ow
 
 #### 1. Flash the image to a microSD
 
-Write `images/seedsigner_os.<branch>.<board>-dev.img` to a microSD card with Raspberry Pi Imager ("Use custom"), balenaEtcher, or `dd`, then put the card in the SeedSigner.
+Write `images/bigsigner_os.<branch>.<board>-dev.img` to a microSD card with Raspberry Pi Imager ("Use custom"), balenaEtcher, or `dd`, then put the card in the BigSigner.
 
 #### 2. Connect the device
 
@@ -114,7 +116,7 @@ The simplest path is the **USB relay** — the Pi appears to your Mac as a USB e
 3. **To computers using:** check the RNDIS/Ethernet Gadget (the USB interface).
 4. Toggle **Internet Sharing** on (the indicator turns green).
 
-The dev image already has the USB ethernet gadget baked in, so — unlike the upstream [usb_relay.md](https://github.com/SeedSigner/seedsigner/blob/dev/docs/usb_relay.md) guide — you do **not** need to edit anything on the card.
+The dev image already has the USB ethernet gadget baked in, so — unlike the upstream [usb_relay.md](https://github.com/BigSigner/bigsigner/blob/dev/docs/usb_relay.md) guide — you do **not** need to edit anything on the card.
 
 #### 4. Add an SSH shortcut
 
@@ -143,8 +145,8 @@ On the device:
 
 ```bash
 cd /mnt/data
-git clone --recursive https://github.com/SeedSigner/seedsigner.git
-cd seedsigner
+git clone --recursive https://github.com/BigSigner/bigsigner.git
+cd bigsigner
 git submodule update --init --recursive
 python3 -m venv venv
 source venv/bin/activate
@@ -165,7 +167,7 @@ Notes:
 
 ### Developing on the device
 
-There are multiple ways to work on the SeedSigner code with a dev image, and you can mix them freely — either way the app runs from `/mnt/data/seedsigner`:
+There are multiple ways to work on the BigSigner code with a dev image, and you can mix them freely — either way the app runs from `/mnt/data/seedsigner`:
 
 - **A — Work directly on the device.** Clone the repo onto the device over the network and edit / commit / pull right there; `git`, editors (`vi`, `nano`), and the Python toolchain are all on the image. Good when you want a self-contained setup that doesn't depend on a host.
 - **B — Edit on your Mac, sync to the device.** Keep your working tree and your editor/IDE on your Mac and push changes to the device with `rsync` whenever you want to test. Good when you prefer your host tooling.
@@ -176,18 +178,18 @@ In both cases `start.sh` runs `/mnt/data/seedsigner/src/main.py` when it exists 
 
 ```bash
 cd /mnt/data
-git clone --recursive https://github.com/SeedSigner/seedsigner.git
+git clone --recursive https://github.com/BigSigner/bigsigner.git
 ```
 
 Then follow the venv/test setup in the [Quick start](#6-clone-the-repo-set-up-the-venv-and-run-the-tests). Edit in place on the device and `seedsigner restart` to pick up changes.
 
 #### Workflow B: edit on your Mac, rsync to the device
 
-Keep editing in your local checkout (e.g. `~/Source/seedsigner`) and push it to the device's `/mnt/data/seedsigner` over SSH. A ready-made helper lives at [`docs/scripts/rsync-to-seedsigner.sh`](scripts/rsync-to-seedsigner.sh) — copy it to the **root of your local seedsigner checkout** and run it from there:
+Keep editing in your local checkout (e.g. `~/Source/bigsigner`) and push it to the device's `/mnt/data/seedsigner` over SSH. A ready-made helper lives at [`docs/scripts/rsync-to-seedsigner.sh`](scripts/rsync-to-seedsigner.sh) — copy it to the **root of your local bigsigner checkout** and run it from there:
 
 ```bash
-cp path/to/seedsigner-os/docs/scripts/rsync-to-seedsigner.sh ~/Source/seedsigner/
-cd ~/Source/seedsigner
+cp path/to/bigsigner-os/docs/scripts/rsync-to-seedsigner.sh ~/Source/bigsigner/
+cd ~/Source/bigsigner
 ./rsync-to-seedsigner.sh             # sync the working tree to the device
 ./rsync-to-seedsigner.sh --restart   # ...and `seedsigner restart` afterward
 ```

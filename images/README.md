@@ -1,1 +1,1 @@
-After following the build steps, this folder (locally) is where seedsigner-os images can be found
+After following the build steps, this folder (locally) is where bigsigner-os images can be found. Image filenames use the `bigsigner_os` prefix.

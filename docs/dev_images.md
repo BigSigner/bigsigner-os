@@ -1,6 +1,8 @@
 # Development images
 
-The `-dev` images exist to make it convenient to develop SeedSigner *on the device itself*. They run the same application, from the same buildroot environment, with the same libraries as the release images with additions to aid in development conveniences. **They are not security-hardened: networking and SSH are enabled. Never use a dev image with real funds.**
+BigSigner OS is a fork of [SeedSigner OS](https://github.com/SeedSigner/seedsigner-os). The `-dev` images exist to make it convenient to develop BigSigner *on the device itself*. They run the same application, from the same buildroot environment, with the same libraries as the release images with additions to aid in development conveniences. **They are not security-hardened: networking and SSH are enabled. Never use a dev image with real funds.**
+
+Hostnames, the root password, the data-partition label, and on-device commands in this guide still use `seedsigner`. Those names come from the build configuration and the application, which have not been renamed yet. Built image files use the `bigsigner_os` prefix.
 
 This doc is the **reference** for what the developer images contain and how they're configured. For the hands-on side — the quick start, syncing your code, controlling the app, and running the tests — see [dev_workflow.md](dev_workflow.md).
 
@@ -25,13 +27,13 @@ Like the release image, the dev image boots entirely from an initramfs (the root
 ## What's added
 
 - **Networking**: onboard wifi (Zero 2 W / Pi 3 / Pi 4), any `eth*` USB ethernet adapter, and the Pi 2/3/4's onboard NIC. Everything is DHCP.
-- **USB relay**: `dtoverlay=dwc2` plus a built-in `g_ether` gadget. Plug the Pi's USB **OTG** port into a computer and it shows up as an "RNDIS/Ethernet Gadget" at a fixed `10.55.0.1`, so `ssh root@10.55.0.1` works immediately with no host-side configuration. This requires an OTG-capable port: the micro-USB **data** port on the Pi Zero / Zero W / Zero 2 W, or the **USB-C** power port on the Pi 4. The Pi 2 / Pi 3 Model B route USB through an onboard hub with no exposed OTG, so on those boards use the onboard Ethernet (or a USB wifi/ethernet adapter) instead. If you also want the Pi to reach the internet over the cable, turn on internet sharing on the host (see [seedsigner docs/usb_relay.md](https://github.com/SeedSigner/seedsigner/blob/dev/docs/usb_relay.md) for host-side setup — the SD-card-side steps there are *not* needed, the dev image is preconfigured) — the Pi detects the host's DHCP server and uses that instead of its static address. See "USB relay networking" below.
+- **USB relay**: `dtoverlay=dwc2` plus a built-in `g_ether` gadget. Plug the Pi's USB **OTG** port into a computer and it shows up as an "RNDIS/Ethernet Gadget" at a fixed `10.55.0.1`, so `ssh root@10.55.0.1` works immediately with no host-side configuration. This requires an OTG-capable port: the micro-USB **data** port on the Pi Zero / Zero W / Zero 2 W, or the **USB-C** power port on the Pi 4. The Pi 2 / Pi 3 Model B route USB through an onboard hub with no exposed OTG, so on those boards use the onboard Ethernet (or a USB wifi/ethernet adapter) instead. If you also want the Pi to reach the internet over the cable, turn on internet sharing on the host (see [bigsigner docs/usb_relay.md](https://github.com/BigSigner/bigsigner/blob/dev/docs/usb_relay.md) for host-side setup — the SD-card-side steps there are *not* needed, the dev image is preconfigured) — the Pi detects the host's DHCP server and uses that instead of its static address. See "USB relay networking" below.
 - **SSH server** (dropbear): log in as `root` with the root password below, or drop an `authorized_keys` file on the boot partition. Host keys persist on the data partition, so no fingerprint warnings after reboots.
 - **HDMI console + USB keyboard/mouse**: a root shell runs on `tty1`.
 - **Persistent storage**: a 256MB ext4 partition (label `seedsigner-data`) mounted at `/mnt/data`, **auto-grown to fill the rest of the microSD on first boot** (so a 32GB card gives you ~32GB of `/mnt/data`). Because the whole OS runs from RAM, you can pull the microSD while the device is running (`/mnt/data` disappears, everything else keeps working) and reinsert it later — `/mnt/data` auto-remounts, no reboot needed. Run `sync` before pulling the card if you have unsaved writes.
 - **CLI tools**: `git`, `gh`, `rsync`, `ssh`/`scp`/`sftp` (OpenSSH client), `vi` (busybox), `nano`, `wget`, `ip`/`ifconfig`/`ping`/`nslookup`, `pip` (with setuptools), plus `bash`, `tmux`, `htop`, `strace`, `gdb`, `jq`, and more. The full python stdlib (including `unittest`) is kept, and all `.py` sources stay readable on-device instead of `.pyc`-only. See "Installing Python packages" below for the pip/venv specifics.
 
-## Building the developer SeedSigner OS Image
+## Building the developer BigSigner OS Image
 
 Set `BOARD_TYPE` to the board you're building for — one of `pi0`, `pi02w`, `pi2`, or `pi4`:
 
@@ -47,7 +49,7 @@ or from a shell inside the container:
 ./build.sh --${BOARD_TYPE} --dev
 ```
 
-The image lands in `images/seedsigner_os.<branch>.${BOARD_TYPE}-dev.img`. Once you've built it, head to [dev_workflow.md](dev_workflow.md#quick-start-macos) to flash it and start developing.
+The image lands in `images/bigsigner_os.<branch>.${BOARD_TYPE}-dev.img`. Once you've built it, head to [dev_workflow.md](dev_workflow.md#quick-start-macos) to flash it and start developing.
 
 ## Using the image
 
@@ -79,7 +81,7 @@ This works over the USB relay, wifi, and ethernet alike, and follows whatever ad
 
 The advertised name is `seedsigner` (set in `/etc/default/mdnsd`), so the ssh target above is identical on dev and release images. The system hostname, however, is `seedsigner-dev` (release images use `seedsigner-os`) — mdnsd is passed `-H seedsigner` explicitly so the advertised name doesn't follow the hostname.
 
-The hostname difference is deliberate but it is **not** cosmetic: the SeedSigner app keys OS-specific behavior off `os.uname()[1]`, comparing it against the literal `"seedsigner-os"` (`Settings.SEEDSIGNER_OS` in `src/seedsigner/models/settings.py`). On a dev image those checks take the "not running on SeedSigner OS" branch, which means:
+The hostname difference is deliberate but it is **not** cosmetic: the BigSigner app keys OS-specific behavior off `os.uname()[1]`, comparing it against the literal `"seedsigner-os"` (`Settings.SEEDSIGNER_OS` in `src/seedsigner/models/settings.py`). On a dev image those checks take the "not running on SeedSigner OS" branch, which means:
 
 - **Settings persist next to the app, not at the release path.** `Settings.SETTINGS_FILENAME` falls back from `/mnt/microsd/settings.json` to a relative `settings.json`, which lands in the app's working directory — `/mnt/data/seedsigner/` — on the same microSD card. Settings still survive reboots; they're just in a different file.
 - **microSD insert/removal detection doesn't run.** The polling thread in `hardware/microsd.py` is OS-gated, so the Persistent Settings option keeps offering "Enabled" and never swaps in the "Insert SD card to enable" help text. This costs nothing in practice: in dev mode the app itself runs from `/mnt/data` on the card, so pulling the card stops the app outright.

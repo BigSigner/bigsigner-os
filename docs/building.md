@@ -1,9 +1,11 @@
-# Building a SeedSigner SD card image
-Assemble the SeedSigner OS along with the SeedSigner application code into an image file that can be flashed to an SD card and run in your SeedSigner.
+# Building a BigSigner SD card image
+Assemble the BigSigner OS along with the BigSigner application code into an image file that can be flashed to an SD card and run in your BigSigner.
+
+BigSigner OS is a fork of [SeedSigner OS](https://github.com/SeedSigner/seedsigner-os). The Docker build container name and several on-device names may still use `seedsigner`. Built image files use the `bigsigner_os` prefix.
 <br/>
 <br/>
 <br/>
-## 🔥🔥🔥🛠 Quickstart: SeedSigner Reproducible Build! 🛠🔥🔥🔥
+## 🔥🔥🔥🛠 Quickstart: BigSigner Reproducible Build! 🛠🔥🔥🔥
 
 ### Install Dependencies
 * Docker (choose one):
@@ -11,15 +13,15 @@ Assemble the SeedSigner OS along with the SeedSigner application code into an im
     * Or Linux command line: [Docker Engine](https://docs.docker.com/engine/install/#server)
 * Windows PowerShell users may also need to [install `git`](https://git-scm.com/download/win)
 
-### Clone the SeedSigner OS repo
+### Clone the BigSigner OS repo
 In a terminal window:
 
 ```bash
-# Copy the SeedSigner OS repo to your local machine
-git clone --recursive https://github.com/SeedSigner/seedsigner-os.git
+# Copy the BigSigner OS repo to your local machine
+git clone --recursive https://github.com/BigSigner/bigsigner-os.git
 
 # Move into the repo directory
-cd seedsigner-os
+cd bigsigner-os
 ```
 
 ---
@@ -44,19 +46,19 @@ If you're unsure, most people should specify `pi0`.
 export BOARD_TYPE=pi0
 ```
 
-Set your target release version of the SeedSigner code (see: https://github.com/SeedSigner/seedsigner/releases):
+Set your target release version of the BigSigner code (see: https://github.com/BigSigner/bigsigner/releases):
 
 ```bash
 # e.g. 0.8.0, 0.7.0, etc
 export RELEASE_TAG=x.y.z
 ```
 
-Checkout the branch associated to the target release version of the SeedSigner code (e.g. 0.8.5, 0.8.0, etc)
+Checkout the branch associated to the target release version of the BigSigner code (e.g. 0.8.5, 0.8.0, etc)
 ```bash
 git checkout $RELEASE_TAG
 ```
 
-Initialize and update submodules (buildroot) from the seedsigner-os repo
+Initialize and update submodules (buildroot) from the bigsigner-os repo
 ```bash
 git submodule init
 git submodule update
@@ -106,19 +108,19 @@ If you're unsure, most people should specify `pi0`.
 $env:BOARD_TYPE = 'pi0'
 ```
 
-Set your target release version of the SeedSigner code (see: https://github.com/SeedSigner/seedsigner/releases):
+Set your target release version of the BigSigner code (see: https://github.com/BigSigner/bigsigner/releases):
 
 ```powershell
 # e.g. "0.8.0", "0.7.0", etc
 $env:RELEASE_TAG = "x.y.z"  
 ```
 
-Checkout the branch associated to the target release version of the SeedSigner code (e.g. 0.8.5, 0.8.0, etc)
+Checkout the branch associated to the target release version of the BigSigner code (e.g. 0.8.5, 0.8.0, etc)
 ```powershell
 git checkout $env:RELEASE_TAG
 ```
 
-Initialize and update submodules (buildroot) from the seedsigner-os repo
+Initialize and update submodules (buildroot) from the bigsigner-os repo
 ```powershell
 git submodule init
 git submodule update
@@ -141,11 +143,11 @@ Building can take 25min to 2.5hrs+ depending on your cpu and will require 20-30 
 When the build completes you'll see:
 ```bash
 seedsigner-os-build-images-1  | /opt/buildroot
-seedsigner-os-build-images-1  | {image hash}  /opt/../images/seedsigner_os.{RELEASE_TAG}.{BOARD_TYPE}.img
+seedsigner-os-build-images-1  | {image hash}  /opt/../images/bigsigner_os.{RELEASE_TAG}.{BOARD_TYPE}.img
 seedsigner-os-build-images-1 exited with code 0
 ```
 
-The second line above will show the SHA256 hash of the image file that was built. This hash should match the hash of the release image [published on the main github repo](https://github.com/SeedSigner/seedsigner/releases) for the chosen `RELEASE_TAG` + `BOARD_TYPE` combo. If the hashes match, then you have successfully confirmed the reproducible build!
+The second line above will show the SHA256 hash of the image file that was built. This hash should match the hash of the release image [published on the main github repo](https://github.com/BigSigner/bigsigner/releases) for the chosen `RELEASE_TAG` + `BOARD_TYPE` combo. If the hashes match, then you have successfully confirmed the reproducible build!
 
 **Windows (PowerShell) note:** Even with LF line endings and symlinks enabled, some Windows builds may still produce a different image hash than the published release. WSL2 remains the recommended path for reproducible builds.
 
@@ -156,10 +158,10 @@ ls -l
 
 total 26628
 -rw-r--r-- 1 root root       97 Sep 11 02:09 README.md
--rw-r--r-- 1 root root 27262976 Sep 11 18:49 seedsigner_os.{RELEASE_TAG}.{BOARD_TYPE}.img
+-rw-r--r-- 1 root root 27262976 Sep 11 18:49 bigsigner_os.{RELEASE_TAG}.{BOARD_TYPE}.img
 ```
 
-That image can be burned to an SD card and run in your SeedSigner.
+That image can be burned to an SD card and run in your BigSigner.
 
 
 
@@ -173,10 +175,10 @@ That image can be burned to an SD card and run in your SeedSigner.
 ## Board configs
 | Board                 | Image Name                        | Build Script Option |
 | --------------------- | --------------------------------- | ------------------- |
-|Raspberry Pi Zero      |`seedsigner_os.<tag>.pi0.img`      | --pi0               |
-|Raspberry Pi Zero W    |`seedsigner_os.<tag>.pi0.img`      | --pi0               |
-|Raspberry Pi 2 Model B |`seedsigner_os.<tag>.pi2.img`      | --pi2               |
-|Raspberry Pi Zero 2 W  |`seedsigner_os.<tag>.pi02w.img`    | --pi02w             |
-|Raspberry Pi 3 Model B |`seedsigner_os.<tag>.pi02w.img`    | --pi02w             |
-|Raspberry Pi 4 Model B |`seedsigner_os.<tag>.pi4.img`      | --pi4               |
+|Raspberry Pi Zero      |`bigsigner_os.<tag>.pi0.img`      | --pi0               |
+|Raspberry Pi Zero W    |`bigsigner_os.<tag>.pi0.img`      | --pi0               |
+|Raspberry Pi 2 Model B |`bigsigner_os.<tag>.pi2.img`      | --pi2               |
+|Raspberry Pi Zero 2 W  |`bigsigner_os.<tag>.pi02w.img`    | --pi02w             |
+|Raspberry Pi 3 Model B |`bigsigner_os.<tag>.pi02w.img`    | --pi02w             |
+|Raspberry Pi 4 Model B |`bigsigner_os.<tag>.pi4.img`      | --pi4               |
 |Build all targets      |(all of the above)                 | --all               |
