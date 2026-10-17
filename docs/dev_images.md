@@ -95,7 +95,7 @@ The image is **IPv4-only** — IPv6 is disabled via `ipv6.disable=1` on the kern
 
 Plug the Pi into a computer over its USB OTG port (see the board table under [USB relay](#whats-added) — the Zero-family micro-USB data port or the Pi 4 USB-C port; not available on the Pi 2/3 Model B). Within a few seconds:
 
-- If the host is **not** sharing its internet connection, the Pi assigns itself `10.55.0.1` and runs a small DHCP server (`udhcpd`, range `10.55.0.2`–`10.55.0.6`), so the host auto-configures its side of the link too. Just `ssh root@10.55.0.1`.
+- If the host is **not** sharing its internet connection, the Pi assigns itself `10.55.0.1` and runs a small DHCP server (`udhcpd`, range `10.55.0.2`–`10.55.0.6`). The lease includes an address and subnet only, not a default router or DNS server, so the host keeps its normal internet connection. Then `ssh root@10.55.0.1`.
 - If the host **is** sharing its internet connection (macOS: System Settings → General → Sharing → Internet Sharing, share to the "RNDIS/Ethernet Gadget"/USB interface), the Pi detects the host's DHCP server instead and takes a normal lease from it (typically `192.168.2.x` on macOS), giving the Pi an actual internet route for `git clone`/`pip`/etc. The lease address can change between reboots — this is exactly why `ssh root@seedsigner.local` (see above) is the easiest way in. Otherwise find the address with `network-info`, or on the host: `arp -a | grep bridge100` (macOS).
 
 ### Installing Python packages
