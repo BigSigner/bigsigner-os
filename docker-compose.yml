@@ -1,12 +1,26 @@
+x-build-volumes: &build-volumes
+  - ./opt:/opt
+  - ./images:/images
+  - ./.ccache:/root/.cache/ccache
+  - ./.buildroot-ccache:/root/.buildroot-ccache
+  - ./.buildroot_dl:/buildroot_dl
+
 services:
   build-images:
+    image: bigsigner-os-build
     build:
       context: .
       dockerfile: Dockerfile
-    volumes:
-      - ./opt:/opt
-      - ./images:/images
-      - ./.ccache:/root/.cache/ccache
-      - ./.buildroot-ccache:/root/.buildroot-ccache
-      - ./.buildroot_dl:/buildroot_dl
+    volumes: *build-volumes
     command: "${SS_ARGS:---no-op}"
+
+  hdmi-touch-demo:
+    profiles: ["hdmi-touch-demo"]
+    image: bigsigner-os-hdmi-touch-demo
+    build:
+      context: .
+      dockerfile: Dockerfile.hdmi-touch-demo
+      additional_contexts:
+        bigsigner-os-build: service:build-images
+    volumes: *build-volumes
+    command: "${SS_ARGS:---no-op} --hdmi-touch-demo"

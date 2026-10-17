@@ -7,6 +7,8 @@ BigSigner OS is a fork of [SeedSigner OS](https://github.com/SeedSigner/seedsign
 
 The *internals* of the developer images — what's added, how they're built, and the networking / pip / venv specifics — live in [dev_images.md](dev_images.md). This doc is the hands-on side: how you actually work.
 
+To check HDMI and touch before developing the application, follow the [HDMI touchscreen demo](hdmi_touch_demo.md).
+
 Commands, hostnames, paths, and script names below still use `seedsigner`. Those names come from the build configuration and the application, which have not been renamed yet. Built image files use the `bigsigner_os` prefix. The application repo cloned in this guide is [BigSigner](https://github.com/BigSigner/bigsigner).
 
 ---

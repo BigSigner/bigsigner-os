@@ -13,4 +13,11 @@ cd opt
 ./build.sh --pi0
 ```
 
+The [HDMI touchscreen demo](hdmi_touch_demo.md) uses the same script with `--dev`:
+
+```bash
+cd opt
+./build.sh --pi0 --dev --hdmi-touch-demo
+```
+
 You can see the different build options with `./build.sh --help`

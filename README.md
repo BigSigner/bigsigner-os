@@ -10,6 +10,7 @@
 </p>
 
 * [Overview](#overview)
+* [HDMI touchscreen demo](docs/hdmi_touch_demo.md)
 * [Building](docs/building.md)
 * [Building (without Docker)](docs/without_docker.md)
 * [BigSigner OS structure](docs/structure.md)
@@ -18,7 +19,7 @@
 
 <br/>
 
-JUMP STRAIGHT TO: [🔥🔥🔥🛠 Quickstart: BigSigner Reproducible Build! 🛠🔥🔥🔥](docs/building.md)
+JUMP STRAIGHT TO: [🔥🔥🔥🛠 HDMI touchscreen demo 🛠🔥🔥🔥](docs/hdmi_touch_demo.md) — a hardware testrun before the [full BigSigner build](docs/building.md).
 
 <br/>
 
@@ -28,7 +29,7 @@ JUMP STRAIGHT TO: [🔥🔥🔥🛠 Quickstart: BigSigner Reproducible Build! �
 
 A custom linux based operating system built to manage software running on an airgapped Bitcoin signing device. BigSigner is both the project name and [application](https://github.com/BigSigner/bigsigner/) running on airgapped hardware. This custom operating system, like all operating systems, manages the hardware resources and provides them to the application code. It's currently designed to run on common Raspberry Pi hardware with [accessories](https://github.com/BigSigner/bigsigner/#shopping-list). The goal of BigSigner OS is to provide an easy, fast, and secure way to build a microSD card image to securely run [BigSigner](https://github.com/BigSigner/bigsigner) code.
 
-BigSigner OS is a fork of [SeedSigner OS](https://github.com/SeedSigner/seedsigner-os). The main difference is the display: BigSigner uses a larger 480×800 touchscreen over HDMI.
+BigSigner OS is a fork of [SeedSigner OS](https://github.com/SeedSigner/seedsigner-os). The main difference is the display: BigSigner uses a larger 480×800 touchscreen over HDMI. The [HDMI touchscreen demo](docs/hdmi_touch_demo.md) is a hardware testrun of that panel before building the full BigSigner application.
 
 
 ## ⚙️ Under the Hood

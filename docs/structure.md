@@ -4,7 +4,7 @@ BigSigner OS is a fork of [SeedSigner OS](https://github.com/SeedSigner/seedsign
 
 ![Image Showing BigSignerOS Layers](img/ssos_layers.png?raw=true "BigSignerOS Layers")
 
-1. First layer is the hardware. Normally this is the Raspberry Pi board, camera, display, and microSD card. SeedSigner OS targets a small Waveshare LCD HAT. BigSigner is intended to use a 480×800 HDMI touch display instead.
+1. First layer is the hardware. Normally this is the Raspberry Pi board, camera, display, and microSD card. SeedSigner OS targets a small Waveshare LCD HAT. BigSigner uses a 480×800 HDMI touch display instead. The [HDMI touchscreen demo](hdmi_touch_demo.md) checks that panel on a dev image.
 2. Second layer is the linux kernel. Using Buildroot, only specific and minimum required modules have been hand selected to use in the kernel. This layer is required to make use of hardware functionality.
 3. Third layer is user space. This is where all the libraries and applications reside. The BigSigner application lives in this space. This is also where libraries typically live to do networking, display drivers, external port communications, etc. However on BigSignerOS, none of these drivers or libraries are loaded (that are typically found in a linux OS).
 

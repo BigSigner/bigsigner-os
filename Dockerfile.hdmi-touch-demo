@@ -1,0 +1,6 @@
+# Layers the touchscreen demo onto the normal build image.
+# /opt is a bind mount at run time, so the demo has to live outside it.
+FROM bigsigner-os-build
+COPY hdmi-touch-demo /hdmi-touch-demo
+WORKDIR /opt
+ENTRYPOINT ["./build.sh"]

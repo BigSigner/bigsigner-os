@@ -1,7 +1,7 @@
 # Dev-image kernel additions, merged on top of ../pi02w/board/kernel.config.
-# The release image disables all of this; keep this file to the minimal delta
-# needed for on-device development (networking, ssh, usb relay, hdmi console,
-# keyboard/mouse, persistent ext4 data partition).
+# The release image enables HDMI DMA, evdev, and the ADS7846 touchscreen.
+# Keep this file to the extra pieces needed for on-device development
+# (networking, ssh, usb relay, keyboard/mouse, persistent ext4 data partition).
 # NOTE: the release config sets CONFIG_MODULES=n, so everything here must be
 # built-in (=y), never =m.
 

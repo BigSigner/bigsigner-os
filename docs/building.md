@@ -2,6 +2,8 @@
 Assemble the BigSigner OS along with the BigSigner application code into an image file that can be flashed to an SD card and run in your BigSigner.
 
 BigSigner OS is a fork of [SeedSigner OS](https://github.com/SeedSigner/seedsigner-os). The Docker build container name and several on-device names may still use `seedsigner`. Built image files use the `bigsigner_os` prefix.
+
+Before this full application build, run the [HDMI touchscreen demo](hdmi_touch_demo.md). It builds a dev image and checks that the 480×800 panel and touch controller work.
 <br/>
 <br/>
 <br/>

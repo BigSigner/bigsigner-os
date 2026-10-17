@@ -23,6 +23,7 @@ help()
   Options:
   -h, --help           Display a help screen and quit 
       --dev            Builds developer version of images
+      --hdmi-touch-demo  Build an image that boots the HDMI touchscreen demo. Does not clone an application.
       --no-clean       Leave previous build, target, and output files
       --skip-repo      Skip pulling repo, assume rootfs-overlay/opt is populated with app code
       --app-repo       Build image with not official seedsigner github repo
@@ -125,6 +126,21 @@ write_version_json() {
   (cd "${app_dir}" && PYTHONPATH=src python3 -B tools/write_versionfile.py) || exit
 }
 
+install_hdmi_touch_demo() {
+  # Host builds see the repo directory next to opt/. Docker COPY puts the same
+  # directory at /hdmi-touch-demo, which is also ${cur_dir}/../hdmi-touch-demo.
+  demo_src="${cur_dir}/../hdmi-touch-demo"
+  if [ ! -f "${demo_src}/main.py" ]; then
+    echo "ERROR: ${demo_src}/main.py not found. Rebuild the Docker image so it contains hdmi-touch-demo." >&2
+    exit 1
+  fi
+  # Same place the application lands, so the existing /opt/src boot script runs it.
+  demo_dest="./rootfs-overlay/opt/src"
+  rm -rf "${demo_dest}"
+  mkdir -p "${demo_dest}"
+  cp -a "${demo_src}/main.py" "${demo_src}/logo.png" "${demo_dest}/"
+}
+
 download_app_repo() {
   # remove previous opt seedsigner app repo code if it already exists
   rm -fr ${rootfs_overlay}/opt/
@@ -208,14 +224,23 @@ build_image() {
     
   fi
   
-  if [ "${3}" != "skip-repo" ]; then
+  if [ -n "${HDMI_TOUCH_DEMO}" ]; then
+    echo "hdmi-touch-demo build: installing the demo, not cloning an application repo"
+    install_hdmi_touch_demo
+    trap 'rm -rf ./rootfs-overlay/opt' EXIT
+  fi
+
+  if [ -z "${HDMI_TOUCH_DEMO}" ] && [ "${3}" != "skip-repo" ]; then
     download_app_repo
   fi
 
   # Both run unconditionally so --skip-repo builds get the same treatment. Order
   # matters: write_version_json needs the .git/ and tools/ that the other removes.
-  write_version_json
-  delete_unnecessary_files
+  # --hdmi-touch-demo has no application tree, so neither step applies.
+  if [ -z "${HDMI_TOUCH_DEMO}" ]; then
+    write_version_json
+    delete_unnecessary_files
+  fi
 
   # Setup external tree
   #make BR2_EXTERNAL="../${config_dir}/" O="${build_dir}" -C ./buildroot/ #2> /dev/null > /dev/null
@@ -227,11 +252,14 @@ build_image() {
   # if successful, mv bigsigner_os.img image to /images
   # rename to image to include branch name and config name, then compress
   
-  bigsigner_os_image_output="${image_dir}/bigsigner_os.${seedsigner_app_repo_branch}.${config_name}.img"
-  if ! [ -z ${seedsigner_app_repo_commit_id} ]; then
+  image_tag="${seedsigner_app_repo_branch}"
+  if [ -n "${HDMI_TOUCH_DEMO}" ]; then
+    image_tag="hdmi-touch-demo"
+  elif [ -n "${seedsigner_app_repo_commit_id}" ]; then
     # use commit id instead of branch name if it is set
-    bigsigner_os_image_output="${image_dir}/bigsigner_os.${seedsigner_app_repo_commit_id}.${config_name}.img"
+    image_tag="${seedsigner_app_repo_commit_id}"
   fi
+  bigsigner_os_image_output="${image_dir}/bigsigner_os.${image_tag}.${config_name}.img"
   
   if [ -f "${build_dir}/images/bigsigner_os.img" ] && [ -d "${image_dir}" ]; then
     mv -f "${build_dir}/images/bigsigner_os.img" "${bigsigner_os_image_output}"
@@ -284,6 +312,9 @@ while (( "$#" )); do
     ;;
   --dev)
     DEVBUILD=0; shift
+    ;;
+  --hdmi-touch-demo)
+    HDMI_TOUCH_DEMO=0; shift
     ;;
   --app-repo=*)
     APP_REPO=$(echo "${1}" | cut -d "=" -f2-); shift

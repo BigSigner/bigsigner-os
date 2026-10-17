@@ -4,7 +4,7 @@ BigSigner OS is a fork of [SeedSigner OS](https://github.com/SeedSigner/seedsign
 
 Hostnames, the root password, the data-partition label, and on-device commands in this guide still use `seedsigner`. Those names come from the build configuration and the application, which have not been renamed yet. Built image files use the `bigsigner_os` prefix.
 
-This doc is the **reference** for what the developer images contain and how they're configured. For the hands-on side — the quick start, syncing your code, controlling the app, and running the tests — see [dev_workflow.md](dev_workflow.md).
+This doc is the **reference** for what the developer images contain and how they're configured. For the hands-on side — the quick start, syncing your code, controlling the app, and running the tests — see [dev_workflow.md](dev_workflow.md). To check the HDMI panel and touch controller on a fresh dev image, see the [HDMI touchscreen demo](hdmi_touch_demo.md).
 
 Available for all four boards: `pi0`, `pi02w`, `pi2`, and `pi4`. Throughout this doc, paths written as `<board>-dev/...` refer to the board you're building for (e.g. `pi0-dev/board/post-build.sh`).
 
