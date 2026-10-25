@@ -167,35 +167,52 @@ delete_unnecessary_files() {
   # Delete unnecessary files to save space. Runs independently of download_app_repo so
   # that --skip-repo builds (CI, which populates rootfs-overlay/opt itself) are trimmed
   # too. Must run after write_version_json, which needs .git/ and tools/.
+  # src/bigsigner stays, including emulator/ (imported by __main__.py) and resources/
+  # (fonts, logo, and the license texts the app displays).
   # folders
+  rm -rf ${rootfs_overlay}/opt/.cursor
   rm -rf ${rootfs_overlay}/opt/.github
+  rm -rf ${rootfs_overlay}/opt/.pytest_cache
+  rm -rf ${rootfs_overlay}/opt/.venv
+  rm -rf ${rootfs_overlay}/opt/artifacts
+  rm -rf ${rootfs_overlay}/opt/build
+  rm -rf ${rootfs_overlay}/opt/dist
   rm -rf ${rootfs_overlay}/opt/docker
   rm -rf ${rootfs_overlay}/opt/docs
+  rm -rf ${rootfs_overlay}/opt/emulator-sdcard
   rm -rf ${rootfs_overlay}/opt/enclosures
   rm -rf ${rootfs_overlay}/opt/l10n
+  rm -rf ${rootfs_overlay}/opt/scripts
   rm -rf ${rootfs_overlay}/opt/seedsigner-screenshots
   rm -rf ${rootfs_overlay}/opt/src/bigsigner.egg-info
-  rm -rf ${rootfs_overlay}/opt/src/bigsigner/resources/seedsigner-translations/.git*
-  rm -rf ${rootfs_overlay}/opt/src/bigsigner/resources/seedsigner-translations/.tx
-  rm -rf ${rootfs_overlay}/opt/src/bigsigner/resources/seedsigner-translations/tools
+  rm -rf ${rootfs_overlay}/opt/src/bigsigner/resources/bigsigner-translations/.git*
+  rm -rf ${rootfs_overlay}/opt/src/bigsigner/resources/bigsigner-translations/.tx
+  rm -rf ${rootfs_overlay}/opt/src/bigsigner/resources/bigsigner-translations/tools
   rm -rf ${rootfs_overlay}/opt/tests
   rm -rf ${rootfs_overlay}/opt/tools
+  # host bytecode; the image compile step regenerates what it needs
+  find ${rootfs_overlay}/opt -depth -type d -name '__pycache__' -exec rm -rf {} +
+  find ${rootfs_overlay}/opt -name '.DS_Store' -delete
   # files
   rm -rf ${rootfs_overlay}/opt/.git*
+  rm -rf ${rootfs_overlay}/opt/AGENTS.md
   rm -rf ${rootfs_overlay}/opt/docker-compose.yml
+  rm -rf ${rootfs_overlay}/opt/LICENSE
   rm -rf ${rootfs_overlay}/opt/LICENSE.md
   rm -rf ${rootfs_overlay}/opt/MANIFEST.in
   rm -rf ${rootfs_overlay}/opt/pyproject.toml
   rm -rf ${rootfs_overlay}/opt/README.md
+  rm -rf ${rootfs_overlay}/opt/RESEARCH_SUMMARY.md
   rm -rf ${rootfs_overlay}/opt/requirements-raspi.txt
   rm -rf ${rootfs_overlay}/opt/requirements.txt
   rm -rf ${rootfs_overlay}/opt/SECURITY.md
+  rm -rf ${rootfs_overlay}/opt/SPEC.md
   rm -rf ${rootfs_overlay}/opt/seedsigner_pubkey.gpg
   rm -rf ${rootfs_overlay}/opt/setup.*
 
-  rm -rf ${rootfs_overlay}/opt/src/bigsigner/resources/seedsigner-translations/LICENSE
-  rm -rf ${rootfs_overlay}/opt/src/bigsigner/resources/seedsigner-translations/README.md
-  rm -rf ${rootfs_overlay}/opt/src/bigsigner/resources/seedsigner-translations/l10n/**/**/*.po
+  rm -rf ${rootfs_overlay}/opt/src/bigsigner/resources/bigsigner-translations/LICENSE
+  rm -rf ${rootfs_overlay}/opt/src/bigsigner/resources/bigsigner-translations/README.md
+  rm -rf ${rootfs_overlay}/opt/src/bigsigner/resources/bigsigner-translations/l10n/**/**/*.po
 }
 
 build_image() {
