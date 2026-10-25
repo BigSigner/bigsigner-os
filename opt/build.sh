@@ -128,8 +128,8 @@ write_version_json() {
 
 install_hdmi_touch_demo() {
   # Host builds see the repo directory next to opt/. Docker COPY puts the same
-  # directory at /hdmi-touch-demo, which is also ${cur_dir}/../hdmi-touch-demo.
-  demo_src="${cur_dir}/../hdmi-touch-demo"
+  # directory at /hdmi-touch-demo, which is also ${cur_dir}/../hdmi-touch-demo/src.
+  demo_src="${cur_dir}/../hdmi-touch-demo/src"
   if [ ! -f "${demo_src}/main.py" ]; then
     echo "ERROR: ${demo_src}/main.py not found. Rebuild the Docker image so it contains hdmi-touch-demo." >&2
     exit 1
