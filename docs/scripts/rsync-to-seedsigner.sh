@@ -23,6 +23,17 @@
 #
 # 3. Test passwordless login:
 #      ssh seedsigner.local
+#
+# Pass the application checkout. It is synced to root@seedsigner.local:/mnt/data/seedsigner/
+#
+#   docs/scripts/rsync-to-seedsigner.sh ~/private_workspace/bigsigner
+#   docs/scripts/rsync-to-seedsigner.sh --restart ~/private_workspace/bigsigner
+#
+# For example, you can edit src/main.py in the tree you pass in, then sync it and restart.
+# The panel keeps the previous picture until the new process draws, which can take a few seconds.
+#
+#   # edit hdmi-touch-demo/src/main.py
+#   docs/scripts/rsync-to-seedsigner.sh --restart hdmi-touch-demo
 # ---------------------------------------------------------------------------
 
 set -eu
@@ -31,20 +42,31 @@ HOST="${SEEDSIGNER_HOST:-seedsigner.local}"
 USER="${SEEDSIGNER_USER:-root}"
 DEST_DIR="/mnt/data/seedsigner"
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-
 RESTART=""
+SOURCE_DIR=""
 for arg in "$@"; do
     case "$arg" in
         --restart)
             RESTART="1"
             ;;
-        *)
+        -*)
             echo "Unknown option: $arg" >&2
             exit 1
             ;;
+        *)
+            if [ -n "$SOURCE_DIR" ]; then
+                echo "Unexpected argument: $arg" >&2
+                exit 1
+            fi
+            SOURCE_DIR=$arg
+            ;;
     esac
 done
+
+if [ -z "$SOURCE_DIR" ] || [ ! -d "$SOURCE_DIR" ]; then
+    echo "Usage: rsync-to-seedsigner.sh [--restart] <source-dir>" >&2
+    exit 1
+fi
 
 # mention about .git/ handling: the app's Version class parses a minimal set of .git/ files
 # on-device (HEAD, config, refs) to display the current branch/tag/commit.
@@ -68,7 +90,19 @@ rsync -avz --delete \
     --exclude '.venv/' \
     --exclude 'seedsigner-screenshots/' \
     --exclude 'coverage_html_report/' \
-    "$SCRIPT_DIR/" "$USER@$HOST:$DEST_DIR/"
+    --exclude '.pytest_cache/' \
+    --exclude 'build/' \
+    --exclude 'dist/' \
+    --exclude '*.egg-info/' \
+    --exclude 'emulator-sdcard/' \
+    --exclude '/artifacts/' \
+    --exclude '/.cursor/' \
+    --exclude '/pyproject.toml' \
+    --exclude '/tests/' \
+    --exclude '/scripts/' \
+    --exclude '/docs/' \
+    --exclude '/*.md' \
+    "$SOURCE_DIR/" "$USER@$HOST:$DEST_DIR/"
 
 if [ -n "$RESTART" ]; then
     ssh "$USER@$HOST" "seedsigner restart"

@@ -187,13 +187,11 @@ Then follow the venv/test setup in the [Quick start](#6-clone-the-repo-set-up-th
 
 #### Workflow B: edit on your Mac, rsync to the device
 
-Keep editing in your local checkout (e.g. `~/Source/bigsigner`) and push it to the device's `/mnt/data/seedsigner` over SSH. A ready-made helper lives at [`docs/scripts/rsync-to-seedsigner.sh`](scripts/rsync-to-seedsigner.sh) — copy it to the **root of your local bigsigner checkout** and run it from there:
+Keep editing in your local checkout (e.g. `~/Source/bigsigner`) and push it to the device's `/mnt/data/seedsigner` over SSH. A ready-made helper lives at [`docs/scripts/rsync-to-seedsigner.sh`](scripts/rsync-to-seedsigner.sh). Pass it the checkout:
 
 ```bash
-cp path/to/bigsigner-os/docs/scripts/rsync-to-seedsigner.sh ~/Source/bigsigner/
-cd ~/Source/bigsigner
-./rsync-to-seedsigner.sh             # sync the working tree to the device
-./rsync-to-seedsigner.sh --restart   # ...and `seedsigner restart` afterward
+docs/scripts/rsync-to-seedsigner.sh ~/Source/bigsigner             # sync the working tree to the device
+docs/scripts/rsync-to-seedsigner.sh --restart ~/Source/bigsigner   # ...and `seedsigner restart` afterward
 ```
 
 It `rsync`s the checkout to `root@seedsigner.local:/mnt/data/seedsigner/` (override the target with the `SEEDSIGNER_HOST` / `SEEDSIGNER_USER` env vars), mirroring with `--delete` while excluding `venv/`, caches, screenshots, and the like. Its header comments walk through the one-time SSH-key setup so the sync is passwordless.
