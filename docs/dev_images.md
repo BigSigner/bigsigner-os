@@ -81,7 +81,7 @@ This works over the USB relay, wifi, and ethernet alike, and follows whatever ad
 
 The advertised name is `seedsigner` (set in `/etc/default/mdnsd`), so the ssh target above is identical on dev and release images. The system hostname, however, is `seedsigner-dev` (release images use `seedsigner-os`) — mdnsd is passed `-H seedsigner` explicitly so the advertised name doesn't follow the hostname.
 
-The hostname difference is deliberate but it is **not** cosmetic: the BigSigner app keys OS-specific behavior off `os.uname()[1]`, comparing it against the literal `"seedsigner-os"` (`Settings.SEEDSIGNER_OS` in `src/seedsigner/models/settings.py`). On a dev image those checks take the "not running on SeedSigner OS" branch, which means:
+The hostname difference is deliberate but it is **not** cosmetic: the BigSigner app keys OS-specific behavior off `os.uname()[1]`, comparing it against the literal `"seedsigner-os"` (`Settings.SEEDSIGNER_OS` in `src/bigsigner/models/settings.py`). On a dev image those checks take the "not running on SeedSigner OS" branch, which means:
 
 - **Settings persist next to the app, not at the release path.** `Settings.SETTINGS_FILENAME` falls back from `/mnt/microsd/settings.json` to a relative `settings.json`, which lands in the app's working directory — `/mnt/data/seedsigner/` — on the same microSD card. Settings still survive reboots; they're just in a different file.
 - **microSD insert/removal detection doesn't run.** The polling thread in `hardware/microsd.py` is OS-gated, so the Persistent Settings option keeps offering "Enabled" and never swaps in the "Insert SD card to enable" help text. This costs nothing in practice: in dev mode the app itself runs from `/mnt/data` on the card, so pulling the card stops the app outright.

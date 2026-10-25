@@ -46,7 +46,7 @@ compile_translations_and_fonts() {
   source .translation-venv/bin/activate
   cd ${rootfs_overlay}/opt
 
-  ss_translations_repo="./src/seedsigner/resources/seedsigner-translations"
+  ss_translations_repo="./src/bigsigner/resources/seedsigner-translations"
 
   # install pinned, hash-locked dependencies: babel + setuptools come from the
   # app repo's own l10n requirements; fonttools (pyftsubset) is a build-only
@@ -96,16 +96,16 @@ compile_translations_and_fonts() {
 }
 
 write_version_json() {
-  # Writes ${rootfs_overlay}/opt/src/seedsigner/version.json, which SeedSigner OS reads
+  # Writes ${rootfs_overlay}/opt/src/bigsigner/version.json, which SeedSigner OS reads
   # at runtime. A missing or incomplete file makes the app raise at the splash screen,
   # so failures here are fatal.
   # Must run while .git/ and tools/ are still present (delete_unnecessary_files drops them).
   app_dir="${rootfs_overlay}/opt"
 
-  if [ -f "${app_dir}/src/seedsigner/version.json" ]; then
+  if [ -f "${app_dir}/src/bigsigner/version.json" ]; then
     # Already written: either by an earlier build_image call (--all) or by the caller.
     echo "version.json already present, leaving as-is"
-    cat "${app_dir}/src/seedsigner/version.json"
+    cat "${app_dir}/src/bigsigner/version.json"
     return
   fi
 
@@ -174,10 +174,10 @@ delete_unnecessary_files() {
   rm -rf ${rootfs_overlay}/opt/enclosures
   rm -rf ${rootfs_overlay}/opt/l10n
   rm -rf ${rootfs_overlay}/opt/seedsigner-screenshots
-  rm -rf ${rootfs_overlay}/opt/src/seedsigner.egg-info
-  rm -rf ${rootfs_overlay}/opt/src/seedsigner/resources/seedsigner-translations/.git*
-  rm -rf ${rootfs_overlay}/opt/src/seedsigner/resources/seedsigner-translations/.tx
-  rm -rf ${rootfs_overlay}/opt/src/seedsigner/resources/seedsigner-translations/tools
+  rm -rf ${rootfs_overlay}/opt/src/bigsigner.egg-info
+  rm -rf ${rootfs_overlay}/opt/src/bigsigner/resources/seedsigner-translations/.git*
+  rm -rf ${rootfs_overlay}/opt/src/bigsigner/resources/seedsigner-translations/.tx
+  rm -rf ${rootfs_overlay}/opt/src/bigsigner/resources/seedsigner-translations/tools
   rm -rf ${rootfs_overlay}/opt/tests
   rm -rf ${rootfs_overlay}/opt/tools
   # files
@@ -193,9 +193,9 @@ delete_unnecessary_files() {
   rm -rf ${rootfs_overlay}/opt/seedsigner_pubkey.gpg
   rm -rf ${rootfs_overlay}/opt/setup.*
 
-  rm -rf ${rootfs_overlay}/opt/src/seedsigner/resources/seedsigner-translations/LICENSE
-  rm -rf ${rootfs_overlay}/opt/src/seedsigner/resources/seedsigner-translations/README.md
-  rm -rf ${rootfs_overlay}/opt/src/seedsigner/resources/seedsigner-translations/l10n/**/**/*.po
+  rm -rf ${rootfs_overlay}/opt/src/bigsigner/resources/seedsigner-translations/LICENSE
+  rm -rf ${rootfs_overlay}/opt/src/bigsigner/resources/seedsigner-translations/README.md
+  rm -rf ${rootfs_overlay}/opt/src/bigsigner/resources/seedsigner-translations/l10n/**/**/*.po
 }
 
 build_image() {
