@@ -118,7 +118,7 @@ The simplest path is the **USB relay** — the Pi appears to your Mac as a USB e
 3. **To computers using:** check the RNDIS/Ethernet Gadget (the USB interface).
 4. Toggle **Internet Sharing** on (the indicator turns green).
 
-The dev image already has the USB ethernet gadget baked in, so — unlike the upstream [usb_relay.md](https://github.com/BigSigner/bigsigner/blob/dev/docs/usb_relay.md) guide — you do **not** need to edit anything on the card.
+The dev image already has the USB ethernet gadget configured, so nothing on the card needs editing.
 
 #### 4. Add an SSH shortcut
 
@@ -146,13 +146,11 @@ Password: `seedsigner`. Give the device 15–30s after plugging in to boot and b
 On the device:
 
 ```bash
-cd /mnt/data
-git clone https://github.com/BigSigner/bigsigner.git
-cd bigsigner
+git clone https://github.com/BigSigner/bigsigner.git /mnt/data/seedsigner
+cd /mnt/data/seedsigner
 python3 -m venv venv
 source venv/bin/activate
-python3 -m pip install -r tests/requirements.txt
-python3 -m pip install -e .
+python3 -m pip install -e ".[dev]"
 pytest
 seedsigner restart
 ```
@@ -175,8 +173,7 @@ In both cases `start.sh` runs `/mnt/data/seedsigner/src/main.py` when it exists 
 #### Workflow A: clone on the device
 
 ```bash
-cd /mnt/data
-git clone https://github.com/BigSigner/bigsigner.git
+git clone https://github.com/BigSigner/bigsigner.git /mnt/data/seedsigner
 ```
 
 Then follow the venv/test setup in the [Quick start](#6-clone-the-repo-set-up-the-venv-and-run-the-tests). Edit in place on the device and `seedsigner restart` to pick up changes.
@@ -192,7 +189,7 @@ docs/scripts/rsync-to-seedsigner.sh --restart ~/Source/bigsigner   # ...and `see
 
 It `rsync`s the checkout to `root@seedsigner.local:/mnt/data/seedsigner/` (override the target with the `SEEDSIGNER_HOST` / `SEEDSIGNER_USER` env vars), mirroring with `--delete` while excluding `venv/`, caches, screenshots, and the like. Its header comments walk through the one-time SSH-key setup so the sync is passwordless.
 
-Most of `.git/` is excluded too, but a small subset (`HEAD`, `config`, and the loose refs under `refs/heads` and `refs/tags`) *is* synced: the app's `Version` class parses those on-device to show the current branch/tag/commit. First-time on the device you still need to create the venv — see the Quick start and [Running the tests](#running-the-tests--screenshot-generator).
+Most of `.git/` is excluded. First-time on the device you still need to create the venv — see the Quick start and [Running the tests](#running-the-tests).
 
 ### Controlling the app
 
@@ -207,28 +204,22 @@ seedsigner restart     # stop + start -- pick up code changes
 
 (`seedsigner` is a thin wrapper over `/etc/init.d/S02seedsigner`, which is what starts the app at boot.) So the edit loop is just: edit your tree under `/mnt/data/seedsigner`, then `seedsigner restart`. To run the app in the foreground instead (to watch its output/tracebacks live): `seedsigner stop`, then `cd /mnt/data/seedsigner/src && python3 main.py`.
 
-### Running the tests / screenshot generator
+### Running the tests
 
-The test tools (`pytest`, `pytest-cov`, `coverage`) are **not** in the image; install them from `tests/requirements.txt`. The suite also needs the app's runtime dependencies (PIL/Pillow, numpy, embit, pyzbar, the `seedsigner` package), which **are** in the image and reachable because `python3 -m venv` includes the system site-packages by default here (without that you'd get `ModuleNotFoundError: No module named 'PIL'` at collection time):
+`pytest` is not in the image. The dev extra in `pyproject.toml` pins it. The suite's runtime libraries (Pillow, numpy, embit, pyzbar) are already in the image, and `python3 -m venv` includes the system site-packages by default here, so pip does not try to compile them:
 
 ```bash
 cd /mnt/data/seedsigner
 python3 -m venv venv                # defaults to --system-site-packages here
 . venv/bin/activate
-python3 -m pip install -r tests/requirements.txt   # pytest 7.4.2, pytest-cov, coverage
+python3 -m pip install -e ".[dev]"  # the app, plus pytest 8.3.3
 ```
 
-Sanity-check that the image's packages are visible in the venv, then run:
+Sanity-check that the image's packages are visible in the venv, then run the suite from the repo root. It writes review screenshots under `artifacts/screenshots/`:
 
 ```bash
 python3 -c "import PIL, numpy, embit; print('PIL', PIL.__version__)"
-pytest                                              # full suite from the repo root
-pytest tests/screenshot_generator/generator.py --locale es   # screenshots
+pytest
 ```
-
-Notes:
-
-- **Use the pinned `tests/requirements.txt`**, not a bare `pip install pytest`. A bare install pulls the newest pytest (9.x), whose collection/config behavior differs from the pinned 7.4.2 the suite targets; `tests/requirements.txt` gets the intended version (and downgrades pytest if a newer one is already in the venv).
-- `coverage` has no `armv7l` wheel, so pip builds it from source. With no compiler it falls back to coverage's pure-Python tracer automatically — `pytest --cov` still works, just measures a bit slower.
 
 For the pip/venv mechanics behind all of this (why the venv defaults are flipped, installing extra packages, testing a newer version of a baked-in library), see [Installing Python packages](dev_images.md#installing-python-packages) in the dev image reference.
