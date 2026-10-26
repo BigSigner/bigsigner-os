@@ -14,13 +14,30 @@ DATA_SYS="/sys/class/block/mmcblk0p2"
 DATA_DEV="/dev/mmcblk0p2"
 DATA_MNT="/mnt/data"
 
+# A damaged ext4 (for example "orphan file block 0: bad checksum") makes
+# mount fail. Repair it once while this partition is present, then stop
+# calling mount so the same error is not retried every 2s. The flag resets
+# when the partition disappears, so a reinserted card gets one more try.
+repair_tried=0
+
 while true; do
 	if [ -e "$DATA_SYS/dev" ]; then
 		# Partition present: ensure it is mounted.
 		if ! grep -q " $DATA_MNT " /proc/mounts; then
-			[ -b "$DATA_DEV" ] || mknod "$DATA_DEV" b $(sed 's/:/ /' "$DATA_SYS/dev")
-			mkdir -p "$DATA_MNT"
-			mount -t ext4 "$DATA_DEV" "$DATA_MNT" 2>/dev/null
+			if [ "$repair_tried" -eq 0 ]; then
+				[ -b "$DATA_DEV" ] || mknod "$DATA_DEV" b $(sed 's/:/ /' "$DATA_SYS/dev")
+				mkdir -p "$DATA_MNT"
+				if ! mount -t ext4 "$DATA_DEV" "$DATA_MNT" 2>/dev/null; then
+					echo "data-automount: $DATA_DEV failed to mount, running e2fsck" > /dev/kmsg
+					# Exit 1 means errors were corrected. Keep going and mount.
+					e2fsck -fy "$DATA_DEV" >/dev/null 2>&1 || true
+					if mount -t ext4 "$DATA_DEV" "$DATA_MNT" 2>/dev/null; then
+						repair_tried=0
+					else
+						repair_tried=1
+					fi
+				fi
+			fi
 		fi
 	else
 		# Card/partition gone: lazily detach the now-stale mount and clean up
@@ -30,6 +47,7 @@ while true; do
 			umount -l "$DATA_MNT" 2>/dev/null
 		fi
 		[ -b "$DATA_DEV" ] && rm -f "$DATA_DEV"
+		repair_tried=0
 	fi
 	sleep 2
 done
