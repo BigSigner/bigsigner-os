@@ -145,7 +145,7 @@ Building can take 25min to 2.5hrs+ depending on your cpu and will require 20-30 
 When the build completes you'll see:
 ```bash
 seedsigner-os-build-images-1  | /opt/buildroot
-seedsigner-os-build-images-1  | {image hash}  /opt/../images/bigsigner_os.{RELEASE_TAG}.{BOARD_TYPE}.<git-short>[-dirty].img
+seedsigner-os-build-images-1  | {image hash}  /opt/../images/bigsigner_os.{RELEASE_TAG}.{BOARD_TYPE}.os-commit-<os-short>[-dirty-<8>][-app-commit-<app-short>][-dirty].img
 seedsigner-os-build-images-1 exited with code 0
 ```
 
@@ -160,7 +160,7 @@ ls -l
 
 total 26628
 -rw-r--r-- 1 root root       97 Sep 11 02:09 README.md
--rw-r--r-- 1 root root 27262976 Sep 11 18:49 bigsigner_os.{RELEASE_TAG}.{BOARD_TYPE}.<git-short>[-dirty].img
+-rw-r--r-- 1 root root 27262976 Sep 11 18:49 bigsigner_os.{RELEASE_TAG}.{BOARD_TYPE}.os-commit-<os-short>[-dirty-<8>][-app-commit-<app-short>][-dirty].img
 ```
 
 That image can be burned to an SD card and run in your BigSigner.
@@ -177,10 +177,10 @@ That image can be burned to an SD card and run in your BigSigner.
 ## Board configs
 | Board                 | Image Name                        | Build Script Option |
 | --------------------- | --------------------------------- | ------------------- |
-|Raspberry Pi Zero      |`bigsigner_os.<tag>.pi0.<git-short>[-dirty].img`      | --pi0               |
-|Raspberry Pi Zero W    |`bigsigner_os.<tag>.pi0.<git-short>[-dirty].img`      | --pi0               |
-|Raspberry Pi 2 Model B |`bigsigner_os.<tag>.pi2.<git-short>[-dirty].img`      | --pi2               |
-|Raspberry Pi Zero 2 W  |`bigsigner_os.<tag>.pi02w.<git-short>[-dirty].img`    | --pi02w             |
-|Raspberry Pi 3 Model B |`bigsigner_os.<tag>.pi02w.<git-short>[-dirty].img`    | --pi02w             |
-|Raspberry Pi 4 Model B |`bigsigner_os.<tag>.pi4.<git-short>[-dirty].img`      | --pi4               |
+|Raspberry Pi Zero      |`bigsigner_os.<tag>.pi0.os-commit-<os-short>[-dirty-<8>][-app-commit-<app-short>][-dirty].img`      | --pi0               |
+|Raspberry Pi Zero W    |`bigsigner_os.<tag>.pi0.os-commit-<os-short>[-dirty-<8>][-app-commit-<app-short>][-dirty].img`      | --pi0               |
+|Raspberry Pi 2 Model B |`bigsigner_os.<tag>.pi2.os-commit-<os-short>[-dirty-<8>][-app-commit-<app-short>][-dirty].img`      | --pi2               |
+|Raspberry Pi Zero 2 W  |`bigsigner_os.<tag>.pi02w.os-commit-<os-short>[-dirty-<8>][-app-commit-<app-short>][-dirty].img`    | --pi02w             |
+|Raspberry Pi 3 Model B |`bigsigner_os.<tag>.pi02w.os-commit-<os-short>[-dirty-<8>][-app-commit-<app-short>][-dirty].img`    | --pi02w             |
+|Raspberry Pi 4 Model B |`bigsigner_os.<tag>.pi4.os-commit-<os-short>[-dirty-<8>][-app-commit-<app-short>][-dirty].img`      | --pi4               |
 |Build all targets      |(all of the above)                 | --all               |

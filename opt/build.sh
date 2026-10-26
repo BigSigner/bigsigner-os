@@ -40,10 +40,11 @@ tail_endless() {
   exit 0
 }
 
-# Short commit hash of this bigsigner-os tree, with -dirty when tracked
-# files or untracked source files differ from HEAD. Captured once before
-# the build writes into the tree. Docker sees the repo at /src/bigsigner-os;
-# a host run sees it as the parent of opt/.
+# Short commit hash of this bigsigner-os tree. A dirty tree appends
+# -dirty- and the first 8 hex characters of the SHA-256 of `git diff HEAD`
+# plus the contents of untracked files. Captured once before the build writes
+# into the tree. Docker sees the repo at /src/bigsigner-os; a host run sees it
+# as the parent of opt/.
 os_git_rev() {
   local repo=""
   if [ -e /src/bigsigner-os/.git ]; then
@@ -76,10 +77,28 @@ os_git_rev() {
     esac
   done < <("${gitcmd[@]}" status --porcelain)
   if [ -n "$dirty" ]; then
-    printf '%s\n' "${rev}-dirty"
+    printf '%s-dirty-%s\n' "$rev" "$(os_diff_fingerprint "$repo" "${gitcmd[@]}")"
   else
     printf '%s\n' "$rev"
   fi
+}
+
+os_diff_fingerprint() {
+  local repo="$1"
+  shift
+  local -a gitcmd=("$@")
+  local path
+  {
+    "${gitcmd[@]}" diff HEAD
+    "${gitcmd[@]}" ls-files --others --exclude-standard -z |
+      while IFS= read -r -d '' path; do
+        case "$path" in
+          output|output/*) continue ;;
+        esac
+        printf 'untracked %s\n' "$path"
+        cat "${repo}/${path}" 2>/dev/null || true
+      done
+  } | sha256sum | cut -c1-8
 }
 
 write_version_json() {
@@ -147,13 +166,49 @@ download_app_repo() {
   fi
 }
 
+save_app_commit() {
+  # .git is removed below. Keep the short commit it pointed at, so a later
+  # --skip-repo build can still name the image with that commit. This file
+  # lives at /opt on the device because the whole overlay directory is copied
+  # into the image.
+  app_dir="${rootfs_overlay}/opt"
+  if git -C "${app_dir}" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    git -C "${app_dir}" rev-parse --short HEAD > "${app_dir}/app-git-commit" || exit
+  fi
+}
+
+image_rev() {
+  # os-commit-<os-short>[-dirty-<8>][-demo][-app-commit-<short>][-dirty]
+  # The last -dirty means a file under the device's /opt is newer than
+  # app-git-commit. Directories are ignored: deleting .git updates their
+  # timestamps even when the remaining files are unchanged.
+  local rev="os-commit-${OS_GIT_REV}"
+  if [ -n "${HDMI_TOUCH_DEMO}" ]; then
+    printf '%s\n' "${rev}-demo"
+    return 0
+  fi
+  local commit_file="${rootfs_overlay}/opt/app-git-commit"
+  if [ ! -f "${commit_file}" ]; then
+    echo "warning: ${commit_file} not found; image name has no app commit" >&2
+    printf '%s\n' "${rev}-app-commit-unknown"
+    return 0
+  fi
+  local app_commit
+  app_commit=$(tr -d '[:space:]' < "${commit_file}")
+  rev="${rev}-app-commit-${app_commit}"
+  local newer
+  newer=$(find "${rootfs_overlay}/opt" -type f ! -name app-git-commit -newer "${commit_file}" -print | head -n 1)
+  if [ -n "${newer}" ]; then
+    rev="${rev}-dirty"
+  fi
+  printf '%s\n' "${rev}"
+}
+
 delete_unnecessary_files() {
   # Delete unnecessary files to save space. Runs independently of download_app_repo so
   # that --skip-repo builds (CI, which populates rootfs-overlay/opt itself) are trimmed
-  # too. Must run after write_version_json, which needs .git/ and tools/.
-  # src/bigsigner stays, including emulator/ (imported by __main__.py) and resources/
-  # (fonts, logo, and the license texts the app displays).
-  # folders
+  # too. Must run after write_version_json, which needs .git/ and tools/, and
+  # after save_app_commit, which reads that .git.
   rm -rf ${rootfs_overlay}/opt/.cursor
   rm -rf ${rootfs_overlay}/opt/.github
   rm -rf ${rootfs_overlay}/opt/.pytest_cache
@@ -233,6 +288,7 @@ build_image() {
   # --hdmi-touch-demo has no application tree, so neither step applies.
   if [ -z "${HDMI_TOUCH_DEMO}" ]; then
     write_version_json
+    save_app_commit
     delete_unnecessary_files
   fi
 
@@ -253,7 +309,7 @@ build_image() {
     # use commit id instead of branch name if it is set
     image_tag="${seedsigner_app_repo_commit_id}"
   fi
-  bigsigner_os_image_output="${image_dir}/bigsigner_os.${image_tag}.${config_name}.${OS_GIT_REV}.img"
+  bigsigner_os_image_output="${image_dir}/bigsigner_os.${image_tag}.${config_name}.$(image_rev).img"
   
   if [ -f "${build_dir}/images/bigsigner_os.img" ] && [ -d "${image_dir}" ]; then
     mv -f "${build_dir}/images/bigsigner_os.img" "${bigsigner_os_image_output}"
