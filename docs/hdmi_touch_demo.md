@@ -121,7 +121,7 @@ cd opt
 When the build completes you'll see:
 ```bash
 hdmi-touch-demo-1  | /opt/buildroot
-hdmi-touch-demo-1  | {image hash}  /opt/../images/bigsigner_os.hdmi-touch-demo.pi0-dev.img
+hdmi-touch-demo-1  | {image hash}  /opt/../images/bigsigner_os.hdmi-touch-demo.pi0-dev.<git-short>[-dirty].img
 hdmi-touch-demo-1 exited with code 0
 ```
 
@@ -130,15 +130,15 @@ The completed image file will be in the `images` subdirectory.
 cd images
 ls -l
 
-bigsigner_os.hdmi-touch-demo.pi0-dev.img
+bigsigner_os.hdmi-touch-demo.pi0-dev.<git-short>[-dirty].img
 ```
 
-A Pi Zero 2 W build is named `bigsigner_os.hdmi-touch-demo.pi02w-dev.img`.
+A Pi Zero 2 W build is named `bigsigner_os.hdmi-touch-demo.pi02w-dev.<git-short>[-dirty].img`. The short hash is the bigsigner-os commit the image was built from. `-dirty` is added when that tree has uncommitted changes.
 
 
 ## Flash and boot
 
-Write `images/bigsigner_os.hdmi-touch-demo.<board>-dev.img` to a microSD card with Raspberry Pi Imager ("Use custom"), balenaEtcher, or `dd`. Put the card in the Pi, connect the HDMI display and the GPIO header, and power the Pi on.
+Write `images/bigsigner_os.hdmi-touch-demo.<board>-dev.<git-short>[-dirty].img` to a microSD card with Raspberry Pi Imager ("Use custom"), balenaEtcher, or `dd`. Put the card in the Pi, connect the HDMI display and the GPIO header, and power the Pi on.
 
 The demo starts by itself. The logo appears on the panel, with `touch the screen` underneath it. A press replaces that line with the screen `x` and `y`.
 

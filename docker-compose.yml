@@ -1,6 +1,8 @@
 x-build-volumes: &build-volumes
   - ./opt:/opt
   - ./images:/images
+  # Whole repo, read-only, so the image filename can include the OS commit.
+  - .:/src/bigsigner-os:ro
   - ./.ccache:/root/.cache/ccache
   - ./.buildroot-ccache:/root/.buildroot-ccache
   - ./.buildroot_dl:/buildroot_dl

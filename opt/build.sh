@@ -40,6 +40,48 @@ tail_endless() {
   exit 0
 }
 
+# Short commit hash of this bigsigner-os tree, with -dirty when tracked
+# files or untracked source files differ from HEAD. Captured once before
+# the build writes into the tree. Docker sees the repo at /src/bigsigner-os;
+# a host run sees it as the parent of opt/.
+os_git_rev() {
+  local repo=""
+  if [ -e /src/bigsigner-os/.git ]; then
+    repo=/src/bigsigner-os
+  elif git -C "${cur_dir}/.." rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    repo=$(git -C "${cur_dir}/.." rev-parse --show-toplevel)
+  fi
+  if [ -z "$repo" ]; then
+    echo "warning: bigsigner-os git repo not found; image name will use nogit" >&2
+    printf '%s\n' nogit
+    return 0
+  fi
+
+  local -a gitcmd=(git -c safe.directory='*' -c core.filemode=false --no-optional-locks -C "$repo")
+  local rev
+  rev=$("${gitcmd[@]}" rev-parse --short HEAD 2>/dev/null) || true
+  if [ -z "$rev" ]; then
+    echo "warning: could not read bigsigner-os commit; image name will use nogit" >&2
+    printf '%s\n' nogit
+    return 0
+  fi
+
+  local line dirty=""
+  while IFS= read -r line; do
+    [ -z "$line" ] && continue
+    # A previous build's output directory is not a source change.
+    case "$line" in
+      '?? output'|'?? output/'*) continue ;;
+      *) dirty=1; break ;;
+    esac
+  done < <("${gitcmd[@]}" status --porcelain)
+  if [ -n "$dirty" ]; then
+    printf '%s\n' "${rev}-dirty"
+  else
+    printf '%s\n' "$rev"
+  fi
+}
+
 write_version_json() {
   # Writes ${rootfs_overlay}/opt/src/bigsigner/version.json when the app tree
   # ships tools/write_versionfile.py. The current app does not, and does not
@@ -211,7 +253,7 @@ build_image() {
     # use commit id instead of branch name if it is set
     image_tag="${seedsigner_app_repo_commit_id}"
   fi
-  bigsigner_os_image_output="${image_dir}/bigsigner_os.${image_tag}.${config_name}.img"
+  bigsigner_os_image_output="${image_dir}/bigsigner_os.${image_tag}.${config_name}.${OS_GIT_REV}.img"
   
   if [ -f "${build_dir}/images/bigsigner_os.img" ] && [ -d "${image_dir}" ]; then
     mv -f "${build_dir}/images/bigsigner_os.img" "${bigsigner_os_image_output}"
@@ -343,6 +385,9 @@ fi
 if ! [ -z ${APP_COMMITID} ]; then
   seedsigner_app_repo_commit_id="${APP_COMMITID}"
 fi
+
+# Record the OS commit before build_image writes into the working tree.
+OS_GIT_REV=$(os_git_rev)
 
 ###
 ### Run build_image function based on input arguments

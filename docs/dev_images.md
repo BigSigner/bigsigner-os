@@ -49,7 +49,7 @@ or from a shell inside the container:
 ./build.sh --${BOARD_TYPE} --dev
 ```
 
-The image lands in `images/bigsigner_os.<branch>.${BOARD_TYPE}-dev.img`. Once you've built it, head to [dev_workflow.md](dev_workflow.md#quick-start-macos) to flash it and start developing.
+The image lands in `images/bigsigner_os.<branch>.${BOARD_TYPE}-dev.<git-short>[-dirty].img`. Once you've built it, head to [dev_workflow.md](dev_workflow.md#quick-start-macos) to flash it and start developing.
 
 ## Using the image
 

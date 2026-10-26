@@ -73,9 +73,9 @@ Raise the `count` and re-run the build.
 
 The `docker-compose.yml` mounts the repo's `images` directory as a container volume, so finished images land there on the host. They're named:
 
-`bigsigner_os.<app_repo_branch>.<board_config>.img`
+`bigsigner_os.<app_repo_branch>.<board_config>.<git-short>[-dirty].img`
 
-For example a `pi0` built off the `0.5.2` branch is `bigsigner_os.0.5.2.pi0.img`. Developer builds carry the board's `-dev` config in the name, e.g. `bigsigner_os.<branch>.pi0-dev.img`.
+For example a `pi0` built off the `0.5.2` branch at commit `842d99b` is `bigsigner_os.0.5.2.pi0.842d99b.img`. Developer builds carry the board's `-dev` config in the name, e.g. `bigsigner_os.<branch>.pi0-dev.<git-short>.img`. Uncommitted changes in the bigsigner-os tree append `-dirty` to the short hash.
 
 ---
 
@@ -99,7 +99,7 @@ From a freshly built image, this takes you to running the test suite and your ow
 
 #### 1. Flash the image to a microSD
 
-Write `images/bigsigner_os.<branch>.<board>-dev.img` to a microSD card with Raspberry Pi Imager ("Use custom"), balenaEtcher, or `dd`, then put the card in the BigSigner.
+Write `images/bigsigner_os.<branch>.<board>-dev.<git-short>[-dirty].img` to a microSD card with Raspberry Pi Imager ("Use custom"), balenaEtcher, or `dd`, then put the card in the BigSigner.
 
 #### 2. Connect the device
 
