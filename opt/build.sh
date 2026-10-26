@@ -7,7 +7,8 @@ export FORCE_UNSAFE_CONFIGURE=1 # Allows buildroot/tar to run as root user in do
 cur_dir_name=${PWD##*/}
 cur_dir=$(pwd)
 bigsigner_app_repo="https://github.com/BigSigner/bigsigner.git"
-seedsigner_app_repo_branch="dev"
+seedsigner_app_repo="${bigsigner_app_repo}"
+seedsigner_app_repo_branch="main"
 
 help()
 {
@@ -39,66 +40,10 @@ tail_endless() {
   exit 0
 }
 
-compile_translations_and_fonts() {
-
-  # create virtual env to compile translation files and slim down font files
-  virtualenv .translation-venv
-  source .translation-venv/bin/activate
-  cd ${rootfs_overlay}/opt
-
-  ss_translations_repo="./src/bigsigner/resources/seedsigner-translations"
-
-  # install pinned, hash-locked dependencies: babel + setuptools come from the
-  # app repo's own l10n requirements; fonttools (pyftsubset) is a build-only
-  # addition pinned in this repo (see requirements-l10n-build.txt).
-  # --require-hashes fails the build if either file regresses to unhashed pins.
-  pip install --require-hashes -r l10n/requirements-l10n.txt || exit
-  pip install --require-hashes -r "${cur_dir}/requirements-l10n-build.txt" || exit
-
-  # remove any existing binary mo files if they exist
-  rm -rf ${ss_translations_repo}/l10n/**/**/*.mo
-
-  # generate messages.mo files for each translation
-  python3 setup.py compile_catalog || exit
-
-  # extract characters from all messages.mo translations into all_chars shell variable
-  all_chars=""
-  for f in ${ss_translations_repo}/l10n/*/LC_MESSAGES/messages.mo; do
-    # extract just the locale name from the path (e.g. "ca" from ".../l10n/ca/LC_MESSAGES/messages.mo")
-    locale=$(basename "$(dirname "$(dirname "$f")")")
-    output_chars=$(cd ${ss_translations_repo}/tools && python3 extract_characters_from_babel_mo.py "$locale") || echo "Warning: failed to extract chars for locale: $locale" >&2
-    all_chars="${all_chars}${output_chars}"
-  done
-
-  # add newline chars
-  all_chars="${all_chars}\n\r"
-
-  # rename source NotoSans*ttf files to include "Original" in the name
-  mv ${ss_translations_repo}/fonts/NotoSansAR-Regular.ttf ${ss_translations_repo}/fonts/NotoSansAR-Regular-Original.ttf
-  mv ${ss_translations_repo}/fonts/NotoSansJP-Regular.ttf ${ss_translations_repo}/fonts/NotoSansJP-Regular-Original.ttf
-  mv ${ss_translations_repo}/fonts/NotoSansKR-Regular.ttf ${ss_translations_repo}/fonts/NotoSansKR-Regular-Original.ttf
-  mv ${ss_translations_repo}/fonts/NotoSansSC-Regular.ttf ${ss_translations_repo}/fonts/NotoSansSC-Regular-Original.ttf
-  mv ${ss_translations_repo}/fonts/NotoSansTH-Regular.ttf ${ss_translations_repo}/fonts/NotoSansTH-Regular-Original.ttf
-
-  # slim down font files using characters in all_chars
-  pyftsubset ${ss_translations_repo}/fonts/NotoSansAR-Regular-Original.ttf --text="${all_chars}" --output-file=${ss_translations_repo}/fonts/NotoSansAR-Regular.ttf || exit
-  pyftsubset ${ss_translations_repo}/fonts/NotoSansJP-Regular-Original.ttf --text="${all_chars}" --output-file=${ss_translations_repo}/fonts/NotoSansJP-Regular.ttf || exit
-  pyftsubset ${ss_translations_repo}/fonts/NotoSansKR-Regular-Original.ttf --text="${all_chars}" --output-file=${ss_translations_repo}/fonts/NotoSansKR-Regular.ttf || exit
-  pyftsubset ${ss_translations_repo}/fonts/NotoSansSC-Regular-Original.ttf --text="${all_chars}" --output-file=${ss_translations_repo}/fonts/NotoSansSC-Regular.ttf || exit
-  pyftsubset ${ss_translations_repo}/fonts/NotoSansTH-Regular-Original.ttf --text="${all_chars}" --output-file=${ss_translations_repo}/fonts/NotoSansTH-Regular.ttf || exit
-
-  # remove original font files
-  rm -f ${ss_translations_repo}/fonts/NotoSans*Regular-Original*ttf
-
-  cd -
-  deactivate
-
-}
-
 write_version_json() {
-  # Writes ${rootfs_overlay}/opt/src/bigsigner/version.json, which SeedSigner OS reads
-  # at runtime. A missing or incomplete file makes the app raise at the splash screen,
-  # so failures here are fatal.
+  # Writes ${rootfs_overlay}/opt/src/bigsigner/version.json when the app tree
+  # ships tools/write_versionfile.py. The current app does not, and does not
+  # read that file, so a missing writer is skipped. A writer that fails is fatal.
   # Must run while .git/ and tools/ are still present (delete_unnecessary_files drops them).
   app_dir="${rootfs_overlay}/opt"
 
@@ -110,8 +55,8 @@ write_version_json() {
   fi
 
   if [ ! -f "${app_dir}/tools/write_versionfile.py" ]; then
-    echo "ERROR: ${app_dir}/tools/write_versionfile.py not found; cannot write version.json" >&2
-    exit 1
+    echo "tools/write_versionfile.py not present, skipping version.json"
+    return 0
   fi
 
   # In CI the overlay is a bind-mounted host checkout owned by a different uid than the
@@ -150,17 +95,14 @@ download_app_repo() {
   # check for custom app branch or custom commit. Custom commit takes priority over branch name
   if ! [ -z ${seedsigner_app_repo_commit_id} ]; then
     echo "cloning repo ${seedsigner_app_repo} with commit id ${seedsigner_app_repo_commit_id}"
-    git clone --recurse-submodules "${seedsigner_app_repo}" "${rootfs_overlay}/opt/" || exit
+    git clone "${seedsigner_app_repo}" "${rootfs_overlay}/opt/" || exit
     cd ${rootfs_overlay}/opt/
     git reset --hard "${seedsigner_app_repo_commit_id}" || exit
-    git submodule update || exit
     cd -
   else
     echo "cloning repo ${seedsigner_app_repo} with branch ${seedsigner_app_repo_branch}"
-    git clone --recurse-submodules --depth 1 -b "${seedsigner_app_repo_branch}" "${seedsigner_app_repo}" "${rootfs_overlay}/opt/" || exit
+    git clone --depth 1 -b "${seedsigner_app_repo_branch}" "${seedsigner_app_repo}" "${rootfs_overlay}/opt/" || exit
   fi
-
-  compile_translations_and_fonts
 }
 
 delete_unnecessary_files() {
@@ -185,9 +127,6 @@ delete_unnecessary_files() {
   rm -rf ${rootfs_overlay}/opt/scripts
   rm -rf ${rootfs_overlay}/opt/seedsigner-screenshots
   rm -rf ${rootfs_overlay}/opt/src/bigsigner.egg-info
-  rm -rf ${rootfs_overlay}/opt/src/bigsigner/resources/bigsigner-translations/.git*
-  rm -rf ${rootfs_overlay}/opt/src/bigsigner/resources/bigsigner-translations/.tx
-  rm -rf ${rootfs_overlay}/opt/src/bigsigner/resources/bigsigner-translations/tools
   rm -rf ${rootfs_overlay}/opt/tests
   rm -rf ${rootfs_overlay}/opt/tools
   # host bytecode; the image compile step regenerates what it needs
@@ -209,10 +148,6 @@ delete_unnecessary_files() {
   rm -rf ${rootfs_overlay}/opt/SPEC.md
   rm -rf ${rootfs_overlay}/opt/seedsigner_pubkey.gpg
   rm -rf ${rootfs_overlay}/opt/setup.*
-
-  rm -rf ${rootfs_overlay}/opt/src/bigsigner/resources/bigsigner-translations/LICENSE
-  rm -rf ${rootfs_overlay}/opt/src/bigsigner/resources/bigsigner-translations/README.md
-  rm -rf ${rootfs_overlay}/opt/src/bigsigner/resources/bigsigner-translations/l10n/**/**/*.po
 }
 
 build_image() {

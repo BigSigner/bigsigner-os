@@ -30,8 +30,7 @@ fdisk \
 dosfstools \
 ccache \
 python3 \
-python3-pip \
-python3-virtualenv
+python3-pip
 
 # Locale
 RUN locale-gen en_US.UTF-8  

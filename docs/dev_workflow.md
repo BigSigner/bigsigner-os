@@ -41,7 +41,7 @@ docker exec -it seedsigner-os-build-images-1 bash
 
 From there you can run the build script directly out of `/opt`:
 ```bash
-./build.sh --pi0 --app-repo=https://github.com/BigSigner/bigsigner.git --app-branch=dev --no-clean
+./build.sh --pi0 --app-repo=https://github.com/BigSigner/bigsigner.git --app-branch=main --no-clean
 ```
 or pin a specific commit:
 ```bash
@@ -147,15 +147,12 @@ On the device:
 
 ```bash
 cd /mnt/data
-git clone --recursive https://github.com/BigSigner/bigsigner.git
+git clone https://github.com/BigSigner/bigsigner.git
 cd bigsigner
-git submodule update --init --recursive
 python3 -m venv venv
 source venv/bin/activate
 python3 -m pip install -r tests/requirements.txt
-python3 -m pip install -r l10n/requirements-l10n.txt
 python3 -m pip install -e .
-python setup.py compile_catalog
 pytest
 seedsigner restart
 ```
@@ -164,7 +161,6 @@ Notes:
 
 - `/mnt/data` is the persistent partition, so the checkout and venv survive reboots.
 - On this image `python3 -m venv` defaults to `--system-site-packages`, so the heavy native dependencies (Pillow, numpy, embit, pyzbar) come from the image and pip only installs the pure-Python dev/test tools into the venv. See [Installing Python packages](dev_images.md#installing-python-packages) for the details.
-- `compile_catalog` builds the translation `.mo` files — skip it and the l10n tests fail.
 - `seedsigner restart` relaunches the app from your `/mnt/data/seedsigner` checkout (see [Controlling the app](#controlling-the-app)).
 
 ### Developing on the device
@@ -180,7 +176,7 @@ In both cases `start.sh` runs `/mnt/data/seedsigner/src/main.py` when it exists 
 
 ```bash
 cd /mnt/data
-git clone --recursive https://github.com/BigSigner/bigsigner.git
+git clone https://github.com/BigSigner/bigsigner.git
 ```
 
 Then follow the venv/test setup in the [Quick start](#6-clone-the-repo-set-up-the-venv-and-run-the-tests). Edit in place on the device and `seedsigner restart` to pick up changes.
@@ -196,7 +192,7 @@ docs/scripts/rsync-to-seedsigner.sh --restart ~/Source/bigsigner   # ...and `see
 
 It `rsync`s the checkout to `root@seedsigner.local:/mnt/data/seedsigner/` (override the target with the `SEEDSIGNER_HOST` / `SEEDSIGNER_USER` env vars), mirroring with `--delete` while excluding `venv/`, caches, screenshots, and the like. Its header comments walk through the one-time SSH-key setup so the sync is passwordless.
 
-Most of `.git/` is excluded too, but a small subset (`HEAD`, `config`, and the loose refs under `refs/heads` and `refs/tags`) *is* synced: the app's `Version` class parses those on-device to show the current branch/tag/commit. First-time on the device you still need to create the venv and (for l10n tests) run `compile_catalog` — see the Quick start and [Running the tests](#running-the-tests--screenshot-generator).
+Most of `.git/` is excluded too, but a small subset (`HEAD`, `config`, and the loose refs under `refs/heads` and `refs/tags`) *is* synced: the app's `Version` class parses those on-device to show the current branch/tag/commit. First-time on the device you still need to create the venv — see the Quick start and [Running the tests](#running-the-tests--screenshot-generator).
 
 ### Controlling the app
 
