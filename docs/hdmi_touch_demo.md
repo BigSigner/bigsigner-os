@@ -144,4 +144,4 @@ The demo starts by itself. The logo appears on the panel, with `touch the screen
 
 SSH is optional. On a `--dev` image the Pi's USB **data** port is a network adapter: `ssh root@seedsigner.local` with password `seedsigner`. The demo also prints the framebuffer size, the touch device name, and each coordinate on that terminal.
 
-If the axes are swapped, set `swapxy=1` on the `dtoverlay=ads7846,...` line in `opt/<board>/board/boot_config.txt` and `opt/<board>-dev/board/boot_config.txt`, then rebuild.
+If the axes are swapped, set `swapxy=1` on the `dtparam=swapxy=...` line in `opt/<board>/board/boot_config.txt` and `opt/<board>-dev/board/boot_config.txt`, then rebuild. The Pi firmware keeps 98 characters of a `config.txt` line, so the calibration stays on the following `dtparam` lines. `xohms=1` stays under the driver's pressure limit. `150` drops every touch.

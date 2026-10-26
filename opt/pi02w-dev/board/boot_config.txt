@@ -40,4 +40,8 @@ framebuffer_height=800
 # 16-bit RGB565. A 32-bit framebuffer makes the app rebuild every pixel in
 # software before HDMI can show it. 16-bit halves that copy.
 framebuffer_depth=16
-dtoverlay=ads7846,cs=1,penirq=25,penirq_pull=2,speed=50000,swapxy=0,pmax=255,xohms=150,xmin=400,xmax=3800,ymin=400,ymax=3800
+# The firmware keeps 98 characters of a config.txt line, so the calibration
+# is split. xohms=1 stays under the driver's pressure limit. 150 drops every touch.
+dtoverlay=ads7846,cs=1,penirq=25,penirq_pull=2,speed=50000
+dtparam=swapxy=0,pmax=255,xohms=1
+dtparam=xmin=400,xmax=3800,ymin=400,ymax=3800
