@@ -39,4 +39,4 @@ framebuffer_depth=16
 # is split. xohms=1 stays under the driver's pressure limit. 150 drops every touch.
 dtoverlay=ads7846,cs=1,penirq=25,penirq_pull=2,speed=50000
 dtparam=swapxy=0,pmax=255,xohms=1
-dtparam=xmin=400,xmax=3800,ymin=400,ymax=3800
+dtparam=xmin=200,xmax=3900,ymin=200,ymax=3900
