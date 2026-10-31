@@ -26,6 +26,14 @@ docs/scripts/rsync-to-seedsigner.sh --restart ~/private_workspace/bigsigner
 
 `--restart` runs `seedsigner restart`. The old picture stays on the panel until the new process draws, which can take a few seconds. Do not rsync unless asked. Do not type a real seed into the device or the emulator.
 
+## Inject a seed
+
+```bash
+docs/scripts/rpc.sh injectseed word word ... word
+```
+
+The script uses the SSH session from `ssh-seedsigner.sh`. It does not copy the app and it does not stop the panel. The checkout on the device must already contain `src/bigsigner/rpc.py`. The panel reads command lines from `/tmp/bigsigner-rpc`. `injectseed` is one command. A seed that is already loaded is left as it is. Do not run it unless asked. Do not pass a real seed. The Abandon test mnemonic is the one the app tests use.
+
 The app's browser emulator is the static page in that repo's `web/` directory. Build it there with `python -m bigsigner.bundle`. It is not a Python server.
 
 ## Sitting with the person at the panel

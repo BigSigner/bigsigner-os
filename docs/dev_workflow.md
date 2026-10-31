@@ -204,6 +204,18 @@ seedsigner restart     # stop + start -- pick up code changes
 
 (`seedsigner` is a thin wrapper over `/etc/init.d/S02seedsigner`, which is what starts the app at boot.) So the edit loop is just: edit your tree under `/mnt/data/seedsigner`, then `seedsigner restart`. To run the app in the foreground instead (to watch its output/tracebacks live): `seedsigner stop`, then `cd /mnt/data/seedsigner/src && python3 main.py`.
 
+### Load a seed without manual entry
+
+[`docs/scripts/rpc.sh`](scripts/rpc.sh) sends one command through SSH to the panel that is already running. It does not stop that process. `injectseed` checks a BIP39 mnemonic on the computer. A seed that is already loaded is left as it is. The panel reads commands from a pipe in RAM (`/tmp/bigsigner-rpc`, created when the panel starts). The words are not printed and are not written to the card.
+
+```bash
+docs/scripts/rpc.sh injectseed abandon abandon abandon abandon abandon abandon \
+    abandon abandon abandon abandon abandon about
+docs/scripts/rpc.sh injectseed --passphrase 'secret' word word ... word
+```
+
+On the boot screen, tap the blue Continue button on Remove SD Card. A panel already past that screen opens the new seed. The checkout on the device has to already contain `src/bigsigner/rpc.py`. Sync the app first. The running panel opens the pipe only if it was started from that code. Do not use this on a device that holds real funds. On the device, the same write is `python -m bigsigner.rpc`.
+
 ### Running the tests
 
 `pytest` is not in the image. The dev extra in `pyproject.toml` pins it. The suite's runtime libraries (Pillow, numpy, embit, pyzbar) are already in the image, and `python3 -m venv` includes the system site-packages by default here, so pip does not try to compile them:

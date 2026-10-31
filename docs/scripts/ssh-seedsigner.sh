@@ -36,10 +36,10 @@ start_master() {
       -o NumberOfPasswordPrompts=1 \
       -o ControlPersist=30m \
       $common \
-      "$USER@$HOST"
+      "$USER@$HOST" </dev/null
 }
 
-if ! ssh -O check $common "$USER@$HOST" >/dev/null 2>&1; then
+if ! ssh -O check $common "$USER@$HOST" </dev/null >/dev/null 2>&1; then
   if ! start_master; then
     rm -f "$KNOWN"
     touch "$KNOWN"
