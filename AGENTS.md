@@ -26,7 +26,7 @@ docs/scripts/rsync-to-seedsigner.sh --restart ~/private_workspace/bigsigner
 
 `--restart` runs `seedsigner restart`. The old picture stays on the panel until the new process draws, which can take a few seconds. Do not rsync unless asked. Do not type a real seed into the device or the emulator.
 
-The app repo often has a live emulator on port **8766**. Do not kill, restart, or bind that port.
+The app's browser emulator is the static page in that repo's `web/` directory. Build it there with `python -m bigsigner.bundle`. It is not a Python server.
 
 ## Sitting with the person at the panel
 
