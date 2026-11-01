@@ -32,7 +32,7 @@ docs/scripts/rsync-to-seedsigner.sh --restart ~/private_workspace/bigsigner
 docs/scripts/rpc.sh addseed word word ... word
 ```
 
-The script uses the SSH session from `ssh-seedsigner.sh`. It does not copy the app and it does not stop the panel. The checkout on the device must already contain `src/bigsigner/rpc.py`. The panel reads command lines from `/tmp/bigsigner-rpc`. `addseed` is one command. A 13th, 19th, or 25th word is the passphrase, and that word does not have to be in the word list. A seed that is already loaded is left as it is. Do not run it unless asked. Do not pass a real seed. The Abandon test mnemonic is the one the app tests use.
+The script uses the SSH session from `ssh-seedsigner.sh`. It does not copy the app and it does not stop the panel. It forwards the command as it was typed. The checkout on the device must already contain `src/bigsigner/rpc.py`. The panel reads command lines from `/tmp/bigsigner-rpc` and checks an `addseed` line there. `addseed` is one command. A 13th, 19th, or 25th word is the passphrase, and that word does not have to be in the word list. A bad mnemonic is refused. A seed that is already loaded is left as it is. Do not run it unless asked. Do not pass a real seed. The Abandon test mnemonic is the one the app tests use.
 
 The app's browser emulator is the static page in that repo's `web/` directory. Build it there with `python -m bigsigner.bundle`. It is not a Python server.
 

@@ -206,7 +206,7 @@ seedsigner restart     # stop + start -- pick up code changes
 
 ### Load a seed without manual entry
 
-[`docs/scripts/rpc.sh`](scripts/rpc.sh) sends one command through SSH to the panel that is already running. It does not stop that process. `addseed` checks a BIP39 mnemonic on the computer. A seed that is already loaded is left as it is. The panel reads commands from a pipe in RAM (`/tmp/bigsigner-rpc`, created when the panel starts). The words are not printed and are not written to the card.
+[`docs/scripts/rpc.sh`](scripts/rpc.sh) sends one command through SSH to the panel that is already running. It does not stop that process. The command is forwarded as it was typed. The panel checks an `addseed` line and refuses a bad mnemonic. A seed that is already loaded is left as it is. The panel reads commands from a pipe in RAM (`/tmp/bigsigner-rpc`, created when the panel starts). The words are not printed and are not written to the card.
 
 ```bash
 docs/scripts/rpc.sh addseed abandon abandon abandon abandon abandon abandon \

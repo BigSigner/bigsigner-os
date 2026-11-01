@@ -3,9 +3,11 @@
 # Send one command to the panel that is already running at seedsigner.local.
 #
 # The panel listens on a pipe in RAM, /tmp/bigsigner-rpc. Each line starts with
-# a command word. addseed is one command: the words that follow are a BIP39
-# mnemonic. A 13th, 19th, or 25th word is the passphrase. A seed that is already
-# loaded is left as it is. This script does not stop or restart the panel.
+# a command word. This script forwards the command as it was typed. The panel
+# checks it. addseed is one command: the words that follow are a BIP39 mnemonic.
+# A 13th, 19th, or 25th word is the passphrase. A bad mnemonic is refused there.
+# A seed that is already loaded is left as it is. This script does not stop or
+# restart the panel.
 # Secrets are not written to the SD card and are not printed.
 #
 #   docs/scripts/rpc.sh addseed abandon abandon abandon abandon abandon abandon \
@@ -32,9 +34,10 @@ usage() {
     cat <<'EOF'
 Usage: docs/scripts/rpc.sh COMMAND [ARG...]
 
-Send one command to the running panel. addseed takes the mnemonic words.
-A 13th, 19th, or 25th word is the passphrase.
-A seed that is already loaded is left as it is. The panel is not restarted.
+Send one command to the running panel, as it was typed.
+addseed takes the mnemonic words. A 13th, 19th, or 25th word is the passphrase.
+The panel checks the line. A seed that is already loaded is left as it is.
+The panel is not restarted.
 EOF
 }
 
