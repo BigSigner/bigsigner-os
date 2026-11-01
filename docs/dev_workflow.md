@@ -211,7 +211,7 @@ seedsigner restart     # stop + start -- pick up code changes
 ```bash
 docs/scripts/rpc.sh addseed abandon abandon abandon abandon abandon abandon \
     abandon abandon abandon abandon abandon about
-docs/scripts/rpc.sh addseed --passphrase 'secret' word word ... word
+docs/scripts/rpc.sh addseed word word ... word secret
 ```
 
 On the boot screen, tap the blue Continue button on Remove SD Card. A panel already past that screen opens the new seed. The checkout on the device has to already contain `src/bigsigner/rpc.py`. Sync the app first. The running panel opens the pipe only if it was started from that code. Do not use this on a device that holds real funds. On the device, the same write is `python -m bigsigner.rpc`.

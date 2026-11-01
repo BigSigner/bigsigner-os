@@ -4,13 +4,13 @@
 #
 # The panel listens on a pipe in RAM, /tmp/bigsigner-rpc. Each line starts with
 # a command word. addseed is one command: the words that follow are a BIP39
-# mnemonic, and --passphrase is the BIP39 passphrase. A seed that is already
+# mnemonic. A 13th, 19th, or 25th word is the passphrase. A seed that is already
 # loaded is left as it is. This script does not stop or restart the panel.
 # Secrets are not written to the SD card and are not printed.
 #
 #   docs/scripts/rpc.sh addseed abandon abandon abandon abandon abandon abandon \
 #       abandon abandon abandon abandon abandon about
-#   docs/scripts/rpc.sh addseed --passphrase 'secret' word word ... word
+#   docs/scripts/rpc.sh addseed word word ... word secret
 #
 # The app on the device must already contain src/bigsigner/rpc.py, and the
 # running panel must be a build that opens the pipe. Sync first, then start
@@ -33,7 +33,7 @@ usage() {
 Usage: docs/scripts/rpc.sh COMMAND [ARG...]
 
 Send one command to the running panel. addseed takes the mnemonic words.
---passphrase, placed after addseed, is the BIP39 passphrase.
+A 13th, 19th, or 25th word is the passphrase.
 A seed that is already loaded is left as it is. The panel is not restarted.
 EOF
 }
