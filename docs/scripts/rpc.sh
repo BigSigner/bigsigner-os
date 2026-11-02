@@ -6,8 +6,9 @@
 # a command word. This script forwards the command as it was typed. The panel
 # checks it. addseed is one command: the words that follow are a BIP39 mnemonic.
 # A 13th, 19th, or 25th word is the passphrase. A bad mnemonic is refused there.
-# A seed that is already loaded is left as it is. This script does not stop or
-# restart the panel.
+# A seed that is already loaded is left as it is. tap, tapdown, tapmove,
+# and tapup press the screen: tap x y is a down and an up, and the other
+# three are those phases. This script does not stop or restart the panel.
 # Secrets are not written to the SD card and are not printed.
 #
 #   docs/scripts/rpc.sh addseed abandon abandon abandon abandon abandon abandon \
