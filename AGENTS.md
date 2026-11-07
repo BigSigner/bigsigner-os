@@ -14,7 +14,7 @@ The script keeps a master connection on `/tmp/seedsigner-ssh.sock` for 30 minute
 
 The dev-image root password is `seedsigner`, as written in `docs/dev_workflow.md`. The script uses the installed key when it works, and that password when the key is rejected.
 
-`rsync` and `docs/scripts/rsync-to-seedsigner.sh` call `ssh` themselves. Point them at the same master socket, or they open a second login.
+`docs/scripts/rsync-to-seedsigner.sh` opens that master session first, then points `rsync` at the socket. A plain `rsync` still calls `ssh` itself — point it at the same master socket, or it opens a second login.
 
 ## Copying the app
 

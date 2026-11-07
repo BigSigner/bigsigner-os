@@ -187,7 +187,7 @@ docs/scripts/rsync-to-seedsigner.sh ~/Source/bigsigner             # sync the wo
 docs/scripts/rsync-to-seedsigner.sh --restart ~/Source/bigsigner   # ...and `seedsigner restart` afterward
 ```
 
-It `rsync`s the checkout to `root@seedsigner.local:/mnt/data/seedsigner/` (override the target with the `SEEDSIGNER_HOST` / `SEEDSIGNER_USER` env vars), mirroring with `--delete` while excluding `venv/`, caches, screenshots, and the like. Its header comments walk through the one-time SSH-key setup so the sync is passwordless.
+It opens the shared SSH session from [`ssh-seedsigner.sh`](scripts/ssh-seedsigner.sh), then `rsync`s the checkout to `root@seedsigner.local:/mnt/data/seedsigner/` over that socket (override the target with the `SEEDSIGNER_HOST` / `SEEDSIGNER_USER` env vars), mirroring with `--delete` while excluding `venv/`, caches, screenshots, and the like.
 
 Most of `.git/` is excluded. First-time on the device you still need to create the venv — see the Quick start and [Running the tests](#running-the-tests).
 
