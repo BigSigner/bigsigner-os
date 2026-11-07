@@ -16,10 +16,11 @@ The dev-image root password is `seedsigner`, as written in `docs/dev_workflow.md
 
 `docs/scripts/rsync-to-seedsigner.sh` opens that master session first, then points `rsync` at the socket. A plain `rsync` still calls `ssh` itself — point it at the same master socket, or it opens a second login.
 
-`docs/scripts/copy-to-seedsigner.sh` copies one local file to a path on the device over that same socket. Plain `scp` often fails against this board; use this instead. The remote argument is a directory (keeps the local basename) or an exact file path.
+`docs/scripts/copy-to-seedsigner.sh` copies one or more local files over that same socket. Plain `scp` often fails against this board; use this instead. Put the remote destination last. With one file, it is a directory (keeps the local basename) or an exact file path. With multiple files, it is a directory, created if needed. Leave wildcard patterns unquoted so the calling shell expands them.
 
 ```bash
 docs/scripts/copy-to-seedsigner.sh tests/vectors/native_segwit_combined_warnings.psbt /mnt/microsd/
+docs/scripts/copy-to-seedsigner.sh /tmp/vectors/*.psbt /mnt/microsd/
 ```
 
 ## Copying the app

@@ -185,18 +185,22 @@ Keep editing in your local checkout (e.g. `~/Source/bigsigner`) and push it to t
 ```bash
 docs/scripts/rsync-to-seedsigner.sh ~/Source/bigsigner             # sync the working tree to the device
 docs/scripts/rsync-to-seedsigner.sh --restart ~/Source/bigsigner   # ...and `seedsigner restart` afterward
-
-To copy a single file (plain `scp` often fails against this board), use [`docs/scripts/copy-to-seedsigner.sh`](scripts/copy-to-seedsigner.sh). The remote path is a directory or an exact file path:
-
-```bash
-docs/scripts/copy-to-seedsigner.sh ./tx.psbt /mnt/microsd/
-docs/scripts/copy-to-seedsigner.sh ./tx.psbt /mnt/microsd/transaction.psbt
-```
 ```
 
 It opens the shared SSH session from [`ssh-seedsigner.sh`](scripts/ssh-seedsigner.sh), then `rsync`s the checkout to `root@seedsigner.local:/mnt/data/seedsigner/` over that socket (override the target with the `SEEDSIGNER_HOST` / `SEEDSIGNER_USER` env vars), mirroring with `--delete` while excluding `venv/`, caches, screenshots, and the like.
 
 Most of `.git/` is excluded. First-time on the device you still need to create the venv — see the Quick start and [Running the tests](#running-the-tests).
+
+To copy files (plain `scp` often fails against this board), use [`docs/scripts/copy-to-seedsigner.sh`](scripts/copy-to-seedsigner.sh). Put the remote destination last. With a single file, it can be a directory or an exact file path. With multiple files, it is a directory, created if needed:
+
+```bash
+docs/scripts/copy-to-seedsigner.sh ./tx.psbt /mnt/microsd/
+docs/scripts/copy-to-seedsigner.sh ./tx.psbt /mnt/microsd/transaction.psbt
+docs/scripts/copy-to-seedsigner.sh ./one.psbt ./two.psbt /mnt/microsd/
+docs/scripts/copy-to-seedsigner.sh /tmp/vectors/*.psbt /mnt/microsd/
+```
+
+Leave wildcard patterns such as `/tmp/vectors/*.psbt` unquoted: Bash and Zsh expand them into a list of matching files before the script runs. A quoted pattern is treated as a literal filename. When nothing matches, Zsh normally stops with a no-match error; Bash normally passes the literal pattern, which the script rejects as a missing file.
 
 ### Controlling the app
 
