@@ -33,6 +33,8 @@ docs/scripts/rsync-to-seedsigner.sh --restart ~/private_workspace/bigsigner
 
 `--restart` runs `seedsigner restart`. The old picture stays on the panel until the new process draws, which can take a few seconds. Do not rsync unless asked. Do not type a real seed into the device or the emulator.
 
+The sync script requires the physical SD-card data partition to be mounted read-write at `/mnt/data`, compares file contents with checksums, flushes writes with a remote `sync`, checks the mount again, drops clean file-cache pages in the checkout, and verifies the saved contents before returning or restarting. Any failure prevents the restart. Do not bypass that mount check to copy into the RAM root filesystem: those files disappear after reboot.
+
 ## Inject a seed
 
 ```bash

@@ -55,9 +55,17 @@ if [ -z "$SOURCE_DIR" ] || [ ! -d "$SOURCE_DIR" ]; then
     exit 1
 fi
 
-# Open or reuse the master session. Password, when needed, comes from
-# ssh-seedsigner.sh's askpass helper — not from this terminal.
-"$SSH" true
+# Refuse a directory in the RAM rootfs when the SD card is absent or failed
+# to mount. Otherwise a successful-looking sync disappears at the next boot.
+# This also opens/reuses the shared SSH master session.
+require_data_mount() {
+    "$SSH" 'if ! awk '\''$1 == "/dev/mmcblk0p2" && $2 == "/mnt/data" && $3 == "ext4" && $4 ~ /(^|,)rw(,|$)/ { found = 1 } END { exit !found }'\'' /proc/mounts; then
+        echo "SD-card data partition is not mounted read-write at /mnt/data. Insert the card and wait for it to mount before syncing." >&2
+        exit 1
+    fi'
+}
+
+require_data_mount
 
 RSYNC_SSH="ssh -o ControlPath=$SOCKET -o UserKnownHostsFile=$KNOWN -o LogLevel=ERROR"
 
@@ -66,7 +74,8 @@ RSYNC_SSH="ssh -o ControlPath=$SOCKET -o UserKnownHostsFile=$KNOWN -o LogLevel=E
 # Include just those; the trailing '.git/**' exclude drops everything else
 # (objects, hooks, index, etc.). Order matters: rsync filters are first-match-wins.
 
-rsync -avz --delete \
+sync_tree() {
+rsync "$@" --delete \
     -e "$RSYNC_SSH" \
     --exclude 'rsync-to-seedsigner.sh' \
     --include '.git/' \
@@ -97,6 +106,38 @@ rsync -avz --delete \
     --exclude '/docs/' \
     --exclude '/*.md' \
     "$SOURCE_DIR/" "$USER@$HOST:$DEST_DIR/"
+}
+
+# Compare contents as well as metadata, so a damaged file with an unchanged
+# size and timestamp is repaired too.
+sync_tree -avzc
+
+# Finish SD-card writes before reporting success or starting the new app.
+# A second mount check catches a card removed during the transfer.
+"$SSH" sync
+require_data_mount
+
+# Do not let cached transfer data hide a card that fails to retain writes.
+# Drop clean file pages before the second checksum comparison. This touches
+# only files in the deployed checkout, leaving the rest of the OS cache alone.
+"$SSH" 'python3 -' <<'PY'
+import os
+from pathlib import Path
+
+for path in Path("/mnt/data/seedsigner").rglob("*"):
+    if path.is_file() and not path.is_symlink():
+        with path.open("rb") as handle:
+            os.posix_fadvise(handle.fileno(), 0, 0, os.POSIX_FADV_DONTNEED)
+PY
+
+# Check the saved contents again without modifying them. A successful
+# transfer alone does not detect corruption introduced while saving files.
+VERIFY_CHANGES=$(sync_tree -rcni)
+if [ -n "$VERIFY_CHANGES" ]; then
+    echo "SD-card verification failed; the app has not been restarted:" >&2
+    printf '%s\n' "$VERIFY_CHANGES" >&2
+    exit 1
+fi
 
 if [ -n "$RESTART" ]; then
     "$SSH" "seedsigner restart"
