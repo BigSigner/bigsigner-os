@@ -253,7 +253,9 @@ build_image() {
   # Variables
   config_name="${1:-pi0}"
   config_dir="./${config_name}"
-  rootfs_overlay="./rootfs-overlay"
+  # Absolute: image_rev runs after cd into the build dir, and a relative
+  # path would miss the app-git-commit saved here.
+  rootfs_overlay="${cur_dir}/rootfs-overlay"
   config_file="${config_dir}/configs/pi0"
   build_dir="${cur_dir}/../output"
   build2_dir="${cur_dir}/../../output"
