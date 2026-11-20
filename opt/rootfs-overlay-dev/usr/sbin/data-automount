@@ -13,6 +13,9 @@
 DATA_SYS="/sys/class/block/mmcblk0p2"
 DATA_DEV="/dev/mmcblk0p2"
 DATA_MNT="/mnt/data"
+# The app creates this while it writes a disk image. Skip mounting until the
+# file is gone. A card that disappears is still detached.
+HOLD="/tmp/bigsigner-sd-hold"
 
 # A damaged ext4 (for example "orphan file block 0: bad checksum") makes
 # mount fail. Repair it once while this partition is present, then stop
@@ -21,6 +24,17 @@ DATA_MNT="/mnt/data"
 repair_tried=0
 
 while true; do
+	if [ -f "$HOLD" ]; then
+		if [ ! -e "$DATA_SYS/dev" ]; then
+			if grep -q " $DATA_MNT " /proc/mounts; then
+				umount -l "$DATA_MNT" 2>/dev/null
+			fi
+			[ -b "$DATA_DEV" ] && rm -f "$DATA_DEV"
+			repair_tried=0
+		fi
+		sleep 2
+		continue
+	fi
 	if [ -e "$DATA_SYS/dev" ]; then
 		# Partition present: ensure it is mounted.
 		if ! grep -q " $DATA_MNT " /proc/mounts; then

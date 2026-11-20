@@ -35,6 +35,8 @@ docs/scripts/rsync-to-seedsigner.sh --restart ~/private_workspace/bigsigner
 
 The sync script requires the physical SD-card data partition to be mounted read-write at `/mnt/data`, compares file contents with checksums, flushes writes with a remote `sync`, checks the mount again, drops clean file-cache pages in the checkout, and verifies the saved contents before returning or restarting. Any failure prevents the restart. Do not bypass that mount check to copy into the RAM root filesystem: those files disappear after reboot.
 
+While `/tmp/bigsigner-sd-hold` exists, `mdev.sh` does not mount `/mnt/microsd` and `data-automount` does not mount `/mnt/data`. The app creates that file before it writes a disk image to the card, and removes it when the burn screen is left. A card that disappears during the hold is still detached.
+
 ## Inject a seed
 
 ```bash
